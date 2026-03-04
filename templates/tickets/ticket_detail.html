@@ -1,0 +1,861 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket Details - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Ticket Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-5 fw-bold text-brand-primary mb-2">
+                    <i class="fas fa-ticket-alt me-3 text-brand-accent"></i>Your Ticket
+                </h1>
+                <p class="lead text-muted">Present this ticket at the event venue</p>
+            </div>
+
+            <!-- Main Ticket Card -->
+            <div class="card shadow-lg mb-4" style="border-radius: 1rem; overflow: hidden;">
+                <!-- Ticket Header Strip -->
+                <div class="bg-gradient text-white p-3 text-center" style="background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <small class="d-block opacity-75">TICKET ID</small>
+                            <strong class="fs-6">{{ ticket.id|upper }}</strong>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if ticket.is_valid %}
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>VALID
+                                </span>
+                            {% elif ticket.payment_status == 'pending' %}
+                                <span class="badge bg-warning fs-6">
+                                    <i class="fas fa-clock me-1"></i>PENDING
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">
+                                    <i class="fas fa-times-circle me-1"></i>{{ ticket.get_status_display|upper }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ticket Body -->
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Event Details -->
+                        <div class="col-lg-8">
+                            <div class="mb-4">
+                                <h2 class="fw-bold text-brand-primary mb-3">{{ ticket.event.title }}</h2>
+                                <p class="text-muted mb-4">{{ ticket.event.description|truncatewords:30 }}</p>
+                                
+                                <!-- Event Info Grid -->
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-calendar text-brand-accent me-3" style="width: 20px;"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Date & Time</small>
+                                                <strong>{{ ticket.event.start_date|date:"F d, Y H:i" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-map-marker-alt text-brand-accent me-3" style="width: 20px;"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Venue</small>
+                                                <strong>{{ ticket.event.venue }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-location-dot text-brand-accent me-3" style="width: 20px;"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Location</small>
+                                                <strong>{{ ticket.event.city }}, {{ ticket.event.country }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user text-brand-accent me-3" style="width: 20px;"></i>
+                                            <div>
+                                                <small class="text-muted d-block">Organizer</small>
+                                                <strong>{{ ticket.event.organizer.username }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ticket Details -->
+                            <div class="border-top pt-4">
+                                <h4 class="fw-bold text-brand-primary mb-3">Purchase Details</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <i class="fas fa-ticket-alt text-brand-accent fa-2x mb-2"></i>
+                                            <div class="fw-bold">{{ ticket.quantity }}</div>
+                                            <small class="text-muted">Tickets</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <i class="fas fa-tag text-brand-accent fa-2x mb-2"></i>
+                                            <div class="fw-bold">KSh {{ ticket.price_per_ticket }}</div>
+                                            <small class="text-muted">Per Ticket</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="bg-brand-primary text-white rounded p-3 text-center">
+                                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                                            <div class="fw-bold">KSh {{ ticket.total_amount }}</div>
+                                            <small class="text-white">Total Paid</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Code Section -->
+                        <div class="col-lg-4">
+                            <div class="text-center">
+                                <div class="bg-light rounded-4 p-4 mb-3">
+                                    <div class="bg-white rounded p-3 d-inline-block" style="width: 200px; height: 200px;">
+                                        <!-- QR Code Placeholder -->
+                                        <div class="d-flex align-items-center justify-content-center h-100">
+                                            <div class="text-center">
+                                                <i class="fas fa-qrcode fa-4x text-muted mb-2"></i>
+                                                <div class="small text-muted">Scan for entry</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-brand-primary text-white rounded p-3">
+                                    <div class="fw-bold mb-1">{{ ticket.id|upper }}</div>
+                                    <small class="text-white">Ticket ID</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ticket Footer Strip -->
+                <div class="bg-light p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                Purchased on {{ ticket.created_at|date:"F d, Y H:i" }}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Secure & Verified Ticket
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Print Full Ticket
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="openPrintTicket()">
+                            <i class="fas fa-ticket-alt me-2"></i>Print Simple Ticket
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="openReceiptTicket()">
+                            <i class="fas fa-receipt me-2"></i>Print Receipt Style
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="shareTicket()">
+                            <i class="fas fa-share me-2"></i>Share Ticket
+                        </button>
+                        <a href="{% url 'tickets:my_tickets' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>My Tickets
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Alert -->
+            {% if ticket.payment_status != 'paid' %}
+            <div class="alert alert-warning mt-4 rounded-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-1">Payment Required</h5>
+                        <p class="mb-2">Complete your payment to confirm your ticket.</p>
+                        <form method="post" action="{% url 'tickets:simulate_payment' ticket.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-sm">
+                                <i class="fas fa-credit-card me-2"></i>Complete Payment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Success Message -->
+            {% if ticket.is_valid %}
+            <div class="alert alert-success mt-4 rounded-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle fa-2x me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-1">Ticket Confirmed!</h5>
+                        <p class="mb-0">Your ticket is valid and ready for the event. Present this ticket ID at the venue for entry.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function shareTicket() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Ticket - {{ ticket.event.title }}',
+            text: 'I have a ticket for {{ ticket.event.title }} on {{ ticket.event.start_date|date:"F d, Y" }}',
+            url: window.location.href
+        });
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Ticket link copied to clipboard!', 'success');
+    }
+}
+
+function openPrintTicket() {
+    // Open the simple print ticket in a new window
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Event Ticket - {{ ticket.event.title }}</title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: white;
+                    padding: 20px;
+                    line-height: 1.4;
+                }
+                
+                .ticket-container {
+                    max-width: 400px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                }
+                
+                .ticket-header {
+                    background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    position: relative;
+                }
+                
+                .ticket-header::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -10px;
+                    left: 0;
+                    right: 0;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50% 50% 0 0;
+                }
+                
+                .event-title {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    margin-bottom: 8px;
+                    line-height: 1.2;
+                }
+                
+                .ticket-id {
+                    font-size: 0.875rem;
+                    opacity: 0.8;
+                    font-family: 'Courier New', monospace;
+                }
+                
+                .ticket-body {
+                    padding: 30px 20px 20px;
+                }
+                
+                .event-details {
+                    margin-bottom: 25px;
+                }
+                
+                .detail-row {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 12px;
+                    font-size: 0.875rem;
+                }
+                
+                .detail-icon {
+                    width: 20px;
+                    color: #27ae60;
+                    margin-right: 12px;
+                    flex-shrink: 0;
+                }
+                
+                .detail-text {
+                    color: #2c3e50;
+                    font-weight: 500;
+                }
+                
+                .qr-section {
+                    text-align: center;
+                    margin: 25px 0;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
+                }
+                
+                .qr-code {
+                    width: 120px;
+                    height: 120px;
+                    margin: 0 auto 10px;
+                    background: white;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .qr-placeholder {
+                    font-size: 2rem;
+                    color: #adb5bd;
+                }
+                
+                .qr-text {
+                    font-size: 0.75rem;
+                    color: #6c757d;
+                    margin-bottom: 5px;
+                }
+                
+                .ticket-number {
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    font-family: 'Courier New', monospace;
+                }
+                
+                .ticket-footer {
+                    padding: 15px 20px;
+                    background: #f8f9fa;
+                    border-top: 1px dashed #dee2e6;
+                    text-align: center;
+                }
+                
+                .footer-text {
+                    font-size: 0.75rem;
+                    color: #6c757d;
+                }
+                
+                .status-badge {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-top: 10px;
+                }
+                
+                .status-valid {
+                    background: #d4edda;
+                    color: #155724;
+                }
+                
+                .status-pending {
+                    background: #fff3cd;
+                    color: #856404;
+                }
+                
+                @media print {
+                    body {
+                        background: white;
+                        padding: 0;
+                    }
+                    
+                    .ticket-container {
+                        box-shadow: none;
+                        border: 1px solid #2c3e50;
+                        margin: 0;
+                        max-width: 100%;
+                    }
+                    
+                    @page {
+                        size: 80mm 200mm;
+                        margin: 0;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="ticket-container">
+                <!-- Ticket Header -->
+                <div class="ticket-header">
+                    <div class="event-title">{{ ticket.event.title }}</div>
+                    <div class="ticket-id">ID: {{ ticket.id|upper }}</div>
+                </div>
+                
+                <!-- Ticket Body -->
+                <div class="ticket-body">
+                    <!-- Event Details -->
+                    <div class="event-details">
+                        <div class="detail-row">
+                            <i class="fas fa-calendar detail-icon"></i>
+                            <span class="detail-text">{{ ticket.event.start_date|date:"D M Y, H:i" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-map-marker-alt detail-icon"></i>
+                            <span class="detail-text">{{ ticket.event.venue }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-location-dot detail-icon"></i>
+                            <span class="detail-text">{{ ticket.event.city }}, {{ ticket.event.country }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-ticket-alt detail-icon"></i>
+                            <span class="detail-text">{{ ticket.quantity }} Ticket{% if ticket.quantity > 1 %}s{% endif %}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-money-bill-wave detail-icon"></i>
+                            <span class="detail-text">KSh {{ ticket.total_amount }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Code Section -->
+                    <div class="qr-section">
+                        <div class="qr-code">
+                            <div class="qr-placeholder">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                        </div>
+                        <div class="qr-text">Scan for verification</div>
+                        <div class="ticket-number">{{ ticket.id|upper }}</div>
+                        {% if ticket.is_valid %}
+                            <div class="status-badge status-valid">Valid</div>
+                        {% else %}
+                            <div class="status-badge status-pending">Pending</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Ticket Footer -->
+                <div class="ticket-footer">
+                    <div class="footer-text">
+                        Purchased: {{ ticket.created_at|date:"D M Y, H:i" }} | 
+                        Buyer: {{ ticket.buyer.username }} | 
+                        SibloreEvents Kenya
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    
+    // Wait for the content to load, then print
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+    };
+}
+
+function openReceiptTicket() {
+    // Open the receipt-style ticket in a new window
+    const receiptWindow = window.open('', '_blank', 'width=400,height=600');
+    receiptWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Event Ticket - {{ ticket.event.title }}</title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: 'Courier New', monospace;
+                    background: white;
+                    padding: 20px;
+                    line-height: 1.4;
+                }
+                
+                .ticket {
+                    max-width: 400px;
+                    margin: 0 auto;
+                    border: 1px solid #333;
+                    padding: 20px;
+                    background: white;
+                }
+                
+                .header {
+                    text-align: center;
+                    border-bottom: 2px dashed #333;
+                    padding-bottom: 15px;
+                    margin-bottom: 15px;
+                }
+                
+                .company-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                
+                .receipt-title {
+                    font-size: 14px;
+                    margin-bottom: 10px;
+                }
+                
+                .ticket-number {
+                    font-size: 12px;
+                    margin-bottom: 5px;
+                }
+                
+                .section {
+                    margin-bottom: 15px;
+                }
+                
+                .section-title {
+                    font-weight: bold;
+                    font-size: 12px;
+                    margin-bottom: 8px;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid #333;
+                    padding-bottom: 3px;
+                }
+                
+                .detail-row {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 5px;
+                    font-size: 12px;
+                }
+                
+                .detail-label {
+                    text-transform: capitalize;
+                }
+                
+                .detail-value {
+                    font-weight: bold;
+                    text-align: right;
+                }
+                
+                .qr-section {
+                    text-align: center;
+                    margin: 20px 0;
+                    padding: 15px;
+                    border: 1px solid #333;
+                }
+                
+                .qr-code {
+                    width: 100px;
+                    height: 100px;
+                    margin: 0 auto 10px;
+                    border: 1px solid #333;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 24px;
+                    color: #666;
+                }
+                
+                .qr-text {
+                    font-size: 10px;
+                    margin-bottom: 5px;
+                }
+                
+                .ticket-id {
+                    font-size: 11px;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                
+                .status {
+                    text-align: center;
+                    font-weight: bold;
+                    padding: 5px;
+                    border: 1px solid #333;
+                    margin-bottom: 15px;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                }
+                
+                .status-valid {
+                    background: #f0f9f0;
+                    color: #2d5a2d;
+                }
+                
+                .status-pending {
+                    background: #fff9e6;
+                    color: #856404;
+                }
+                
+                .footer {
+                    text-align: center;
+                    border-top: 2px dashed #333;
+                    padding-top: 15px;
+                    margin-top: 15px;
+                    font-size: 10px;
+                }
+                
+                .footer-text {
+                    margin-bottom: 3px;
+                }
+                
+                .total-section {
+                    border-top: 2px solid #333;
+                    border-bottom: 2px solid #333;
+                    padding: 10px 0;
+                    margin: 15px 0;
+                }
+                
+                .total-row {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+                
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+                    
+                    .ticket {
+                        max-width: 100%;
+                        border: 1px solid #000;
+                    }
+                    
+                    @page {
+                        size: 80mm 200mm;
+                        margin: 5mm;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="ticket">
+                <!-- Header -->
+                <div class="header">
+                    <div class="company-name">SIBLORE EVENTS</div>
+                    <div class="receipt-title">EVENT TICKET</div>
+                    <div class="ticket-number">Ticket #: {{ ticket.id|upper }}</div>
+                    <div class="ticket-number">Date: {{ ticket.created_at|date:"d M Y H:i" }}</div>
+                </div>
+                
+                <!-- Event Details -->
+                <div class="section">
+                    <div class="section-title">Event Details</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Event:</span>
+                        <span class="detail-value">{{ ticket.event.title }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date:</span>
+                        <span class="detail-value">{{ ticket.event.start_date|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Venue:</span>
+                        <span class="detail-value">{{ ticket.event.venue }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span class="detail-value">{{ ticket.event.city }}</span>
+                    </div>
+                </div>
+                
+                <!-- Ticket Details -->
+                <div class="section">
+                    <div class="section-title">Ticket Details</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Quantity:</span>
+                        <span class="detail-value">{{ ticket.quantity }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Price/Ticket:</span>
+                        <span class="detail-value">KSh {{ ticket.price_per_ticket }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Buyer:</span>
+                        <span class="detail-value">{{ ticket.buyer.username }}</span>
+                    </div>
+                </div>
+                
+                <!-- Total -->
+                <div class="total-section">
+                    <div class="total-row">
+                        <span>TOTAL AMOUNT:</span>
+                        <span>KSh {{ ticket.total_amount }}</span>
+                    </div>
+                </div>
+                
+                <!-- Status -->
+                <div class="status {% if ticket.is_valid %}status-valid{% else %}status-pending{% endif %}">
+                    {% if ticket.is_valid %}VALID TICKET{% else %}PAYMENT PENDING{% endif %}
+                </div>
+                
+                <!-- QR Code -->
+                <div class="qr-section">
+                    <div class="qr-code">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="qr-text">SCAN FOR VERIFICATION</div>
+                    <div class="ticket-id">{{ ticket.id|upper }}</div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="footer">
+                    <div class="footer-text">Thank you for choosing SibloreEvents</div>
+                    <div class="footer-text">Kenya's Premier Event Platform</div>
+                    <div class="footer-text">www.siblorevents.com</div>
+                    <div class="footer-text">Support: 0111363870</div>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+    receiptWindow.document.close();
+    
+    // Wait for the content to load, then print
+    receiptWindow.onload = function() {
+        setTimeout(() => {
+            receiptWindow.print();
+            receiptWindow.close();
+        }, 500);
+    };
+}
+</script>
+
+<style>
+@media print {
+    /* Hide everything except the ticket */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* Show only the ticket card and its content */
+    .card, .card * {
+        visibility: visible;
+    }
+    
+    /* Position the ticket at the top of the page */
+    .card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+        border: 2px solid var(--royal-blue) !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Hide buttons and alerts */
+    .btn, .alert, .no-print {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Ensure proper spacing */
+    .container {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Optimize text sizes for print */
+    .display-5 {
+        font-size: 2rem !important;
+    }
+    
+    /* Remove shadows and backgrounds for clean printing */
+    .shadow-lg {
+        box-shadow: none !important;
+    }
+    
+    .bg-gradient {
+        background: var(--royal-blue) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .bg-brand-primary {
+        background: var(--royal-blue) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .text-brand-primary {
+        color: var(--royal-blue) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .text-brand-accent {
+        color: var(--accent-green) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Ensure QR code area prints properly */
+    .bg-light {
+        background: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .bg-white {
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Page setup */
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+    
+    /* Force ticket to fit on one page */
+    .card {
+        page-break-inside: avoid;
+        height: auto;
+    }
+}
+</style>
+{% endblock %}

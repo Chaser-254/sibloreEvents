@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Profile - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Profile Header -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <div class="hero-content">
+                <h1 class="display-4 fw-bold mb-3 text-brand-primary">
+                    My Profile
+                </h1>
+                <p class="lead mb-3 text-muted">
+                    Manage your personal information and account settings.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if user.is_product_seller %}
+                        <a href="{% url 'accounts:product_seller_dashboard' %}" class="btn btn-primary">
+                            Dashboard
+                        </a>
+                    {% elif user.is_seller %}
+                        <a href="{% url 'accounts:seller_dashboard' %}" class="btn btn-primary">
+                            Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:buyer_dashboard' %}" class="btn btn-primary">
+                            Dashboard
+                        </a>
+                    {% endif %}
+                    <a href="#account-info" class="btn btn-outline-primary">
+                        Account Info
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="text-center">
+                <div class="bg-light rounded-4 p-4 d-inline-block">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--accent-green);">
+                    {% else %}
+                        <i class="fas fa-user-circle" style="font-size: 6rem; color: var(--accent-green);"></i>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Section -->
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <h2 class="text-center mb-4 text-brand-primary">
+                Edit Profile Information
+            </h2>
+        </div>
+        <div class="col-lg-8 mx-auto">
+            <div class="stats-card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.first_name|as_crispy_field }}
+                            {{ form.last_name|as_crispy_field }}
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.phone_number|as_crispy_field }}
+                            {{ form.date_of_birth|as_crispy_field }}
+                            {{ form.profile_picture|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            {{ form.bio|as_crispy_field }}
+                            {% if user.is_seller or user.is_product_seller %}
+                                {{ form.business_name|as_crispy_field }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Information Section -->
+    <div class="row" id="account-info">
+        <div class="col-lg-12">
+            <h2 class="text-center mb-4 text-brand-primary">
+                Account Information
+            </h2>
+        </div>
+        <div class="col-lg-8 mx-auto">
+            <div class="stats-card">
+                <div class="row">
+                    <div class="col-md-8">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Account Type:</strong> {{ user.get_user_type_display }}</p>
+                        {% if user.is_seller or user.is_product_seller and user.business_name %}
+                            <p><strong>Business Name:</strong> {{ user.business_name }}</p>
+                        {% endif %}
+                        <p><strong>Member Since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+                        <p><strong>Last Login:</strong> {{ user.last_login|date:"F d, Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--accent-green);">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-5x text-muted mb-2"></i>
+                        {% endif %}
+                        <p class="text-muted small">Profile Picture</p>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProfileModal">
+                        <i class="fas fa-trash me-2"></i>Delete My Account
+                    </button>
+                    <p class="text-muted small mt-2">This action cannot be undone</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Profile Confirmation Modal -->
+<div class="modal fade" id="deleteProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Account
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                
+                <h6>Deleting your account will permanently remove:</h6>
+                <ul>
+                    <li>Your profile information and settings</li>
+                    <li>Your purchase history and tickets</li>
+                    {% if user.is_seller or user.is_product_seller %}
+                    <li>Your events and merchandise listings</li>
+                    <li>Your business information and sales data</li>
+                    {% endif %}
+                    <li>All associated data and files</li>
+                </ul>
+                
+                <div class="alert alert-danger">
+                    <strong>This action is irreversible!</strong> Once your account is deleted, there is no way to recover your data.
+                </div>
+                
+                <p class="mb-0">Are you absolutely sure you want to delete your account?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <form method="post" action="{% url 'accounts:delete_profile' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Delete My Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - SibloreEvents{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Hero Section -->
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <div class="hero-content">
+                <h1 class="display-4 fw-bold mb-3 text-brand-primary">
+                    Shop Amazing Products
+                </h1>
+                <p class="lead mb-3 text-muted">
+                    Discover quality products from trusted sellers. Support local businesses and earn through affiliate marketing!
+                </p>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if user.is_authenticated %}
+                        {% if user.is_product_seller %}
+                            <a href="{% url 'products:create' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </a>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'products:affiliate_dashboard' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-share-alt me-2"></i>Affiliate Dashboard
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:signup' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                            <i class="fas fa-user-plus me-2"></i>Join as Seller
+                        </a>
+                    {% endif %}
+                </div>
+            </div> 
+        </div>
+        <!-- <div class="col-lg-6">
+            <div class="text-center">
+                <div class="bg-light rounded-4 p-4 d-inline-block">
+                    <i class="fas fa-shopping-cart" style="font-size: 4rem; color: var(--accent-green);"></i>
+                </div>
+            </div>
+        </div> -->
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="container mb-4">
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search Products</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" id="search" placeholder="Search products..." value="{{ search_query }}">
+                        <button class="btn text-white" type="submit" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" name="category" id="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="min_price" class="form-label">Min Price</label>
+                    <input type="number" class="form-control" name="min_price" id="min_price" placeholder="KSh 0" value="{{ min_price }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="max_price" class="form-label">Max Price</label>
+                    <input type="number" class="form-control" name="max_price" id="max_price" placeholder="KSh 99999" value="{{ max_price }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="sort" class="form-label">Sort By</label>
+                    <select class="form-select" name="sort" id="sort">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Latest</option>
+                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name: A-Z</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Products Grid -->
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Available Products</h2>
+            {% if affiliate_code %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-share-alt me-2"></i>
+                    <strong>Affiliate Mode Active:</strong> You're viewing products with affiliate code: <code>{{ affiliate_code }}</code>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for product in products %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 product-card">
+                    {% if product.featured_image %}
+                        <img src="{{ product.featured_image.url }}" class="card-img-top" alt="{{ product.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-box fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            {% if product.is_on_sale %}
+                                <span class="badge bg-danger">Sale</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="card-text">{{ product.short_description|truncatewords:10 }}</p>
+                        
+                        <div class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>{{ product.seller.username }}
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {% if product.is_on_sale %}
+                                <span class="text-decoration-line-through text-muted me-2">KSh {{ product.regular_price }}</span>
+                                <span class="fw-bold" style="color: var(--accent-green);">KSh {{ product.current_price }}</span>
+                                <span class="badge bg-success ms-2">{{ product.discount_percentage }}% OFF</span>
+                            {% else %}
+                                <span class="fw-bold" style="color: var(--accent-green);">KSh {{ product.current_price }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.enable_affiliate %}
+                            <div class="mb-2">
+                                <small class="text-success">
+                                    <i class="fas fa-share-alt me-1"></i>
+                                    {{ product.affiliate_commission }}% commission available
+                                </small>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex gap-2">
+                                <a href="{% if affiliate_code %}{{ product.get_absolute_url }}?ref={{ affiliate_code }}{% else %}{{ product.get_absolute_url }}{% endif %}" class="btn text-white flex-fill" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                {% if user.is_authenticated and user != product.seller and product.enable_affiliate %}
+                                    <button class="btn btn-outline-success btn-sm" data-product-id="{{ product.id }}" onclick="quickAffiliate(this.getAttribute('data-product-id'))">
+                                        <i class="fas fa-share-alt"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <h4>No products found</h4>
+                    <p class="text-muted">
+                        {% if search_query or selected_category or min_price or max_price %}
+                            Try adjusting your search criteria or filters.
+                        {% else %}
+                            No products are available at the moment.
+                        {% endif %}
+                    </p>
+                    {% if search_query or selected_category or min_price or max_price %}
+                        <a href="{% url 'products:list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-redo me-2"></i>Clear Filters
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Products pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-success">
+                    <i class="fas fa-check-circle me-2"></i>Success!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function quickAffiliate(productId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "products:create_affiliate_link" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: 'product_id=' + productId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('Affiliate link created! Your code: ' + data.unique_code);
+        } else {
+            showMessage(data.message || 'Error creating affiliate link');
+        }
+    })
+    .catch(error => {
+        showMessage('Error creating affiliate link');
+        console.error('Error:', error);
+    });
+}
+
+function showMessage(message) {
+    document.getElementById('successMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+    modal.show();
+}
+</script>
+
+<style>
+.product-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+    transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}

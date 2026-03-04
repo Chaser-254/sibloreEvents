@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}My Events - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>My Events</h2>
+        <p class="text-muted">Manage all your events - both draft and published</p>
+        <div class="d-flex gap-2 mb-3">
+            <a href="{% url 'events:create' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                <i class="fas fa-plus me-2"></i>Create New Event
+            </a>
+            <a href="{% url 'events:list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-eye me-2"></i>View Public Events
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Events Grid -->
+<div class="row">
+    {% for event in events %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                {% if event.image %}
+                    <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <span class="badge {% if event.status == 'published' %}bg-success{% elif event.status == 'draft' %}bg-secondary{% else %}bg-danger{% endif %}">
+                            {{ event.get_status_display|title }}
+                        </span>
+                    </div>
+                    
+                    <p class="card-text">{{ event.description|truncatewords:15 }}</p>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-1"></i>{{ event.start_date|date:"M d, Y H:i" }}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ event.venue }}, {{ event.city }}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span>
+                        {% if event.vip_price %}
+                            <span class="text-muted ms-2">| VIP: KSh {{ event.current_vip_price }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{% url 'events:detail' event.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <a href="{% url 'events:update' event.pk %}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            {% if event.status == 'published' %}
+                                <a href="{% url 'events:delete' event.pk %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h4>No events found</h4>
+                <p class="text-muted">You haven't created any events yet.</p>
+                <a href="{% url 'events:create' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                    <i class="fas fa-plus me-2"></i>Create Your First Event
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <nav aria-label="My Events pagination">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

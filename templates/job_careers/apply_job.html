@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply for {{ job.title }} - Careers - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'job_careers:list' %}">Careers</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'job_careers:detail' job.slug %}">{{ job.title }}</a></li>
+                    <li class="breadcrumb-item active">Apply</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Job Summary -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-brand-primary mb-3">{{ job.title }}</h5>
+                    <div class="mb-3">
+                        <span class="badge bg-brand-primary me-2">
+                            <i class="fas fa-building me-1"></i>{{ job.category.name }}
+                        </span>
+                        <span class="badge bg-info me-2">
+                            <i class="fas fa-clock me-1"></i>{{ job.get_job_type_display }}
+                        </span>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-map-marker-alt me-2 text-muted"></i>{{ job.location }}
+                        </li>
+                        {% if job.salary_min %}
+                        <li class="mb-2">
+                            <i class="fas fa-money-bill me-2 text-muted"></i>KSh {{ job.salary_min|floatformat:0 }}{% if job.salary_max %} - {{ job.salary_max|floatformat:0 }}{% endif %}
+                        </li>
+                        {% endif %}
+                        {% if job.application_deadline %}
+                        <li class="mb-2">
+                            <i class="fas fa-hourglass-half me-2 text-muted"></i>Deadline: {{ job.application_deadline|date:"F d, Y" }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <div class="alert alert-info small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Make sure to review the job requirements before applying.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-brand-primary mb-4">
+                        <i class="fas fa-paper-plane me-2"></i>Application Form
+                    </h3>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" id="applicationForm">
+                        {% csrf_token %}
+                        
+                        <!-- Personal Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-brand-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>Personal Information
+                                </h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    First Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.first_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    Last Name <span class="text-danger">*</span>
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.last_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    Email Address <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    Phone Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.phone.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-brand-primary mb-3">
+                                    <i class="fas fa-briefcase me-2"></i>Professional Information
+                                </h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.resume.id_for_label }}" class="form-label">
+                                    Resume/CV <span class="text-danger">*</span>
+                                </label>
+                                {{ form.resume }}
+                                <div class="form-text">{{ form.resume.help_text }}</div>
+                                {% if form.resume.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.resume.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.cover_letter.id_for_label }}" class="form-label">
+                                    Cover Letter <span class="text-danger">*</span>
+                                </label>
+                                {{ form.cover_letter }}
+                                {% if form.cover_letter.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.cover_letter.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.linkedin_profile.id_for_label }}" class="form-label">
+                                    LinkedIn Profile
+                                </label>
+                                {{ form.linkedin_profile }}
+                                <div class="form-text">{{ form.linkedin_profile.help_text }}</div>
+                                {% if form.linkedin_profile.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.linkedin_profile.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.portfolio.id_for_label }}" class="form-label">
+                                    Portfolio URL
+                                </label>
+                                {{ form.portfolio }}
+                                <div class="form-text">{{ form.portfolio.help_text }}</div>
+                                {% if form.portfolio.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.portfolio.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Terms and Submit -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <strong>Please review:</strong> Make sure all information is accurate before submitting. You can only apply once for this position.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <!-- Terms and Conditions -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="jobTermsCheckbox" required>
+                                        <label class="form-check-label" for="jobTermsCheckbox">
+                                            I agree to the <a href="#" class="text-brand-primary" data-bs-toggle="modal" data-bs-target="#jobTermsModal">Job Application Terms</a> and understand that false information may result in rejection of my application.
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">You must agree to our terms to submit your application.</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex gap-3">
+                                    <a href="{% url 'job_careers:detail' job.slug %}" class="btn btn-secondary">
+                                        Back to Job
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        Submit Application
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hiring Process Section -->
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h4 text-brand-primary mb-4">Our Hiring Process</h3>
+                        <div class="row">
+                            <div class="col-md-3 mb-4">
+                                <div class="text-center">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <span class="fw-bold text-brand-primary">1</span>
+                                    </div>
+                                    <h5 class="text-brand-primary mb-2">Application Review</h5>
+                                    <p class="text-muted small">We carefully review all applications to identify qualified candidates who match our requirements.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="text-center">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <span class="fw-bold text-brand-primary">2</span>
+                                    </div>
+                                    <h5 class="text-brand-primary mb-2">Initial Interview</h5>
+                                    <p class="text-muted small">Selected candidates are invited for an initial interview to discuss experience and qualifications.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="text-center">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <span class="fw-bold text-brand-primary">3</span>
+                                    </div>
+                                    <h5 class="text-brand-primary mb-2">Technical Assessment</h5>
+                                    <p class="text-muted small">Depending on the role, candidates may complete technical assessments or practical exercises.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="text-center">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                        <span class="fw-bold text-brand-primary">4</span>
+                                    </div>
+                                    <h5 class="text-brand-primary mb-2">Final Decision</h5>
+                                    <p class="text-muted small">Final interviews are conducted, and successful candidates receive offers to join our team.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equal Opportunity Employer -->
+    <div class="container py-3">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="alert alert-info mb-0">
+                    <h5 class="alert-heading h6 text-brand-primary mb-2">Equal Opportunity Employer</h5>
+                    <p class="mb-0 small">
+                        <strong>SibloreEvents is an equal opportunity employer.</strong> We celebrate diversity and are committed to creating an inclusive environment for all employees. 
+                        All qualified applicants will receive consideration for employment without regard to race, color, religion, gender, gender identity or expression, 
+                        sexual orientation, national origin, genetics, disability, age, or veteran status. We encourage candidates from all backgrounds to apply.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Application Terms Modal -->
+<div class="modal fade" id="jobTermsModal" tabindex="-1" aria-labelledby="jobTermsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-brand-primary" id="jobTermsModalLabel">Job Application Terms</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="fw-bold mb-3">1. Accuracy of Information</h6>
+                <p class="mb-3">You certify that all information provided in this application is true and complete. False or misleading information may result in immediate rejection of your application or termination if discovered after employment.</p>
+                
+                <h6 class="fw-bold mb-3">2. Authorization for Background Check</h6>
+                <p class="mb-3">You authorize SibloreEvents to verify the information provided and to conduct background checks as required for the position.</p>
+                
+                <h6 class="fw-bold mb-3">3. Equal Opportunity Employment</h6>
+                <p class="mb-3">SibloreEvents is an equal opportunity employer. All employment decisions are made without regard to race, color, religion, gender, gender identity, sexual orientation, national origin, genetics, disability, age, or veteran status.</p>
+                
+                <h6 class="fw-bold mb-3">4. At-Will Employment</h6>
+                <p class="mb-3">If hired, employment with SibloreEvents is on an "at-will" basis, meaning either you or the company can terminate the employment relationship at any time, with or without cause or notice.</p>
+                
+                <h6 class="fw-bold mb-3">5. Confidentiality</h6>
+                <p class="mb-3">You agree to keep confidential all information learned during the application process, including but not limited to business strategies, processes, and proprietary information.</p>
+                
+                <h6 class="fw-bold mb-3">6. Data Protection</h6>
+                <p class="mb-3">Your personal data will be processed in accordance with our privacy policy and applicable data protection laws. We will retain your application information for a reasonable period as required by law.</p>
+                
+                <h6 class="fw-bold mb-3">7. Application Process</h6>
+                <p class="mb-3">Submission of an application does not guarantee an interview or employment. Only qualified candidates will be contacted for further consideration.</p>
+                
+                <h6 class="fw-bold mb-3">8. Communication</h6>
+                <p class="mb-3">You consent to receive communications from SibloreEvents regarding your application via email, phone, or other contact methods provided.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('applicationForm').addEventListener('submit', function(e) {
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    // Re-enable after 5 seconds in case of error
+    setTimeout(function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Application';
+    }, 5000);
+});
+
+// File upload validation
+document.getElementById('{{ form.resume.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const fileSize = file.size / 1024 / 1024; // Convert to MB
+        if (fileSize > 5) {
+            alert('File size must be less than 5MB');
+            e.target.value = '';
+        }
+        
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please upload a PDF, DOC, or DOCX file');
+            e.target.value = '';
+        }
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 0.2rem rgba(39, 174, 96, 0.25);
+}
+
+.btn-primary {
+    background: var(--royal-blue);
+    border-color: var(--royal-blue);
+}
+
+.btn-primary:hover {
+    background: #1e3a8a;
+    border-color: #1e3a8a;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+@media (max-width: 768px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .d-flex.gap-3 .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

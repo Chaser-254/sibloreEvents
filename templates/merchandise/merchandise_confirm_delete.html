@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Merchandise - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Delete Merchandise</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Are you sure?</h5>
+                    <p>You are about to delete the merchandise item: <strong>{{ object.name }}</strong></p>
+                    <p>This action cannot be undone. All data associated with this merchandise will be permanently deleted.</p>
+                </div>
+                
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6>Merchandise Details</h6>
+                        <p><strong>Name:</strong> {{ object.name }}</p>
+                        <p><strong>Price:</strong> KSh {{ object.price }}</p>
+                        <p><strong>Stock:</strong> {{ object.stock_quantity }} available</p>
+                        <p><strong>Status:</strong> {{ object.get_status_display }}</p>
+                        {% if object.stock_quantity > 0 %}
+                            <div class="alert alert-info mt-2">
+                                <strong>Note:</strong> This item has {{ object.stock_quantity }} units in stock.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'merchandise:detail' object.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Merchandise
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

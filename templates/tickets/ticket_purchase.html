@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Purchase Tickets - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Purchase Tickets</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>{{ event.title }}</h4>
+                        <p class="text-muted">{{ event.description|truncatewords:20 }}</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        {% if event.is_sold_out %}
+                            <span class="badge bg-danger fs-6">Sold Out</span>
+                        {% else %}
+                            <span class="badge bg-success fs-6">Available</span>
+                        {% endif %}
+                        
+                        {% if event.is_featured %}
+                            <span class="badge bg-warning fs-6">Featured</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Event Details</h5>
+                        <p><strong>Date:</strong> {{ event.start_date|date:"F d, Y H:i" }}</p>
+                        {% if event.end_date != event.start_date %}
+                            <p><strong>End Date:</strong> {{ event.end_date|date:"F d, Y H:i" }}</p>
+                        {% endif %}
+                        <p><strong>Venue:</strong> {{ event.venue }}</p>
+                        <p><strong>Address:</strong> {{ event.address }}</p>
+                        <p><strong>City:</strong> {{ event.city }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Pricing Information</h5>
+                        <p><strong>Current Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span></p>
+                        {% if event.early_bird_price and event.early_bird_deadline %}
+                            <p><strong>Early Bird:</strong> KSh {{ event.early_bird_price }}</p>
+                            <p><strong>Early Bird Ends:</strong> {{ event.early_bird_deadline|date:"F d, Y H:i" }}</p>
+                        {% endif %}
+                        <p><strong>Available:</strong> {{ event.available_tickets }} / {{ event.max_attendees }}</p>
+                    </div>
+                </div>
+                
+                {% if event.is_sold_out %}
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Sold Out</h5>
+                        <p>This event is currently sold out. Please check back later or look for similar events.</p>
+                        <a href="{% url 'events:list' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">Browse Other Events</a>
+                    </div>
+                {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.quantity|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>Order Summary</h6>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Price per ticket:</span>
+                                            <strong>KSh {{ event.current_price }}</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Quantity:</span>
+                                            <strong id="quantity-display">1</strong>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Total:</span>
+                                            <strong class="fw-bold" style="color: var(--accent-green);" id="total-display">KSh {{ event.current_price }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h5><i class="fas fa-info-circle me-2"></i>Payment Information</h5>
+                            <p>Payment processing will be handled through M-Pesa in the next phase. For now, this is a simulation of the purchase process.</p>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn text-white btn-lg" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                                <i class="fas fa-ticket-alt me-2"></i>Complete Purchase
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Organizer Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">About Organizer</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    {% if event.organizer.profile_picture %}
+                        <img src="{{ event.organizer.profile_picture.url }}" class="rounded-circle me-3" width="50" height="50" alt="{{ event.organizer.username }}">
+                    {% else %}
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            {{ event.organizer.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="mb-0">{{ event.organizer.username }}</h6>
+                        <small class="text-muted">Event Organizer</small>
+                    </div>
+                </div>
+                {% if event.organizer.bio %}
+                    <p class="mb-0">{{ event.organizer.bio|truncatewords:30 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Event Policies -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Event Policies</h5>
+            </div>
+            <div class="card-body">
+                <h6>Refund Policy</h6>
+                <p class="small">Tickets are non-refundable unless the event is cancelled.</p>
+                
+                <h6>Age Requirements</h6>
+                <p class="small">Please check event details for any age restrictions.</p>
+                
+                <h6>What to Bring</h6>
+                <p class="small">Bring a valid ID and your ticket confirmation.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const quantityDisplay = document.getElementById('quantity-display');
+    const totalDisplay = document.getElementById('total-display');
+    const pricePerTicket = parseFloat("{{ event.current_price|floatformat:2 }}");
+    
+    if (quantityInput) {
+        quantityInput.addEventListener('input', function() {
+            const quantity = parseInt(this.value) || 1;
+            const total = pricePerTicket * quantity;
+            
+            quantityDisplay.textContent = quantity;
+            totalDisplay.textContent = 'KSh ' + total.toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %}

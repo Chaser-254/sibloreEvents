@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Ticket - {{ ticket.event.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .ticket-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .ticket-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .ticket-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: white;
+            border-radius: 50% 50% 0 0;
+        }
+        
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        
+        .ticket-id {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .ticket-body {
+            padding: 30px 20px 20px;
+        }
+        
+        .event-details {
+            margin-bottom: 25px;
+        }
+        
+        .detail-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+        }
+        
+        .detail-icon {
+            width: 20px;
+            color: #27ae60;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .detail-text {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .qr-code {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 10px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-placeholder {
+            font-size: 2rem;
+            color: #adb5bd;
+        }
+        
+        .qr-text {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .ticket-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .ticket-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px dashed #dee2e6;
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        
+        .status-valid {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .ticket-container {
+                box-shadow: none;
+                border: 1px solid #2c3e50;
+                margin: 0;
+                max-width: 100%;
+            }
+            
+            @page {
+                size: 80mm 200mm;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket-container">
+        <!-- Ticket Header -->
+        <div class="ticket-header">
+            <div class="event-title">{{ ticket.event.title }}</div>
+            <div class="ticket-id">ID: {{ ticket.id|upper }}</div>
+        </div>
+        
+        <!-- Ticket Body -->
+        <div class="ticket-body">
+            <!-- Event Details -->
+            <div class="event-details">
+                <div class="detail-row">
+                    <i class="fas fa-calendar detail-icon"></i>
+                    <span class="detail-text">{{ ticket.event.start_date|date:"D M Y, H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-map-marker-alt detail-icon"></i>
+                    <span class="detail-text">{{ ticket.event.venue }}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-location-dot detail-icon"></i>
+                    <span class="detail-text">{{ ticket.event.city }}, {{ ticket.event.country }}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-ticket-alt detail-icon"></i>
+                    <span class="detail-text">{{ ticket.quantity }} Ticket{% if ticket.quantity > 1 %}s{% endif %}</span>
+                </div>
+                <div class="detail-row">
+                    <i class="fas fa-money-bill-wave detail-icon"></i>
+                    <span class="detail-text">KSh {{ ticket.total_amount }}</span>
+                </div>
+            </div>
+            
+            <!-- QR Code Section -->
+            <div class="qr-section">
+                <div class="qr-code">
+                    <div class="qr-placeholder">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                </div>
+                <div class="qr-text">Scan for verification</div>
+                <div class="ticket-number">{{ ticket.id|upper }}</div>
+                {% if ticket.is_valid %}
+                    <div class="status-badge status-valid">Valid</div>
+                {% else %}
+                    <div class="status-badge status-pending">Pending</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Ticket Footer -->
+        <div class="ticket-footer">
+            <div class="footer-text">
+                Purchased: {{ ticket.created_at|date:"D M Y, H:i" }} | 
+                Buyer: {{ ticket.buyer.username }} | 
+                SibloreEvents Kenya
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SibloreEvents{% endblock %}</title>
+    
+    <!-- Google Fonts - Inter for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome - Professional Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar-container" id="progressBar">
+        <div class="progress-content">
+            <div class="loading-text">SibloreEvents</div>
+            <div class="loading-subtitle">Loading...</div>
+            
+            <!-- Rotating Progress Ring -->
+            <div class="rotating-ring"></div>
+        </div>
+    </div>
+    
+    <!-- Main Content (initially hidden) -->
+    <div id="mainContent" style="opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0.5s ease;">
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" aria-label="Toggle mobile menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <a class="navbar-brand mx-auto d-flex align-items-center" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="SibloreEvents Logo" class="logo-img me-2" height="40" width="40">
+                <span class="brand-text">SibloreEvents</span>
+            </a>
+            
+            {% if user.is_authenticated %}
+                <div class="profile-icon-nav">
+                    {% if user.profile_picture %}
+                        <a href="{% url 'accounts:profile' %}" class="profile-link">
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover; border: 2px solid var(--accent-green);">
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:profile' %}" class="profile-link">
+                            <i class="fas fa-user-circle" style="color: var(--accent-green);"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'events:list' %}">
+                            <i class="fas fa-calendar-alt me-1"></i>Events
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'merchandise:list' %}">
+                            <i class="fas fa-shopping-bag me-1"></i>Merchandise
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_careers:list' %}">
+                            <i class="fas fa-briefcase me-1"></i>Careers
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle me-2" style="width: 24px; height: 24px; object-fit: cover; border: 2px solid var(--accent-green);">
+                                {% else %}
+                                    <i class="fas fa-user-circle me-2"></i>
+                                {% endif %}
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="fas fa-user-edit me-2"></i>Profile
+                                </a></li>
+                                {% if user.is_seller %}
+                                    <li><a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
+                                        <i class="fas fa-chart-line me-2"></i>Seller Dashboard
+                                    </a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'accounts:buyer_dashboard' %}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Buyer Dashboard
+                                    </a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'tickets:my_tickets' %}">
+                                    <i class="fas fa-ticket-alt me-2"></i>My Tickets
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1rem;">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:signup' %}">
+                                <i class="fas fa-user-plus me-1"></i>Sign Up
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5><i class="fas fa-calendar-check me-2"></i>SibloreEvents</h5>
+                    <p>Your premier platform for events and merchandise. Connecting people through unforgettable experiences.</p>
+                    <div class="d-flex gap-3">
+                        <a href="https://wa.me/254111363870" class="text-white"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.instagram.com/sibloreevents/" class="text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.linkedin.com/in/siblore-software-solutions/" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5><i class="fas fa-link me-2"></i>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'events:list' %}">
+                            <i class="fas fa-calendar-alt me-1"></i>Events
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'products:list' %}">
+                            <i class="fas fa-shopping-cart me-1"></i>Products
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'merchandise:list' %}">
+                            <i class="fas fa-shopping-bag me-1"></i>Merchandise
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'products:affiliate_dashboard' %}">
+                            <i class="fas fa-share-alt me-1"></i>Affiliate Marketing
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'job_careers:list' %}">
+                            <i class="fas fa-briefcase me-1"></i>Careers
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a></li>
+                        <li class="mb-2"><a href="{% url 'accounts:signup' %}">
+                            <i class="fas fa-user-plus me-1"></i>Sign Up
+                        </a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5><i class="fas fa-headset me-2"></i>Support</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" onclick="openWhatsApp()" class="text-decoration-none">
+                            <i class="fab fa-whatsapp me-1"></i>WhatsApp Support
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="openFAQ()" class="text-decoration-none">
+                            <i class="fas fa-question-circle me-1"></i>Help Center
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="openWhatsApp()" class="text-decoration-none">
+                            <i class="fas fa-phone me-1"></i>Contact Us
+                        </a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5><i class="fas fa-gavel me-2"></i>Legal</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" onclick="showTermsOfService()">
+                            <i class="fas fa-file-contract me-1"></i>Terms of Service
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="showPrivacyPolicy()">
+                            <i class="fas fa-shield-alt me-1"></i>Privacy Policy
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="showSellerAgreement()">
+                            <i class="fas fa-handshake me-1"></i>Seller Agreement
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="showRefundPolicy()">
+                            <i class="fas fa-undo me-1"></i>Refund Policy
+                        </a></li>
+                        <li class="mb-2"><a href="#" onclick="showCookiePolicy()">
+                            <i class="fas fa-cookie-bite me-1"></i>Cookie Policy
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <p>&copy; <span id="currentYear"></span> SibloreEvents. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Terms of Service Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-contract me-2"></i>Terms of Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="terms-content">
+                        <h4 class="text-center mb-4">SibloreEvents</h4>
+                        <h5 class="text-center mb-4">TERMS OF SERVICE</h5>
+                        <p class="text-center text-muted mb-4">Last Updated: 4th March 2026</p>
+                        
+                        <h6>OVERVIEW</h6>
+                        <p>This website is operated by SibloreEvents. Throughout the site, the terms "we", "us" and "our" refer to SibloreEvents. SibloreEvents offers this website, including all information, tools, and services available from this site to you, the user, conditioned upon your acceptance of all terms, conditions, policies, and notices stated here.</p>
+                        
+                        <p>By visiting our site and/or purchasing something from us, you engage in our "Service" and agree to be bound by the following Terms of Service ("Terms"), including additional terms and policies referenced herein and/or available by hyperlink. These Terms apply to all users of the platform, including but not limited to buyers, sellers, merchants, event organizers, and contributors of content.</p>
+                        
+                        <p>If you do not agree to all the Terms of Service, you may not access the website or use any services.</p>
+                        
+                        <p>We reserve the right to update, change, or replace any part of these Terms by posting updates on our website. Continued use of the platform constitutes acceptance of those changes.</p>
+                        
+                        <h6>1. DEFINITION OF TERMS</h6>
+                        <p>For purposes of these Terms:</p>
+                        <ul>
+                            <li><strong>"Seller" or "Event Organizer"</strong> - An individual, company, or organization that registers on SibloreEvents to host events, sell tickets, or sell merchandise.</li>
+                            <li><strong>"Buyer" or "Customer"</strong> - A person who purchases tickets or merchandise through SibloreEvents.</li>
+                            <li><strong>"SibloreEvents"</strong> - The online platform that allows Sellers to list events and merchandise and enables Buyers to purchase them.</li>
+                            <li><strong>"Payment Transaction"</strong> - The processing of payment for tickets or merchandise through the platform.</li>
+                            <li><strong>"Event"</strong> - Any event listed for sale or booking by a Seller.</li>
+                            <li><strong>"Merchandise"</strong> - Products listed for sale by a Seller related or unrelated to an event.</li>
+                            <li><strong>"Purchase Amount"</strong> - The total amount paid by a Buyer including ticket price, merchandise price, taxes, and applicable fees.</li>
+                            <li><strong>"Account"</strong> - A registered profile on SibloreEvents used to access services.</li>
+                        </ul>
+                        
+                        <h6>2. REQUIREMENTS FOR REGISTRATION</h6>
+                        <p>To use SibloreEvents, you must:</p>
+                        <ul>
+                            <li>Be at least 18 years old</li>
+                            <li>Be legally capable of entering into binding agreements</li>
+                            <li>Provide accurate, complete, and current registration information</li>
+                        </ul>
+                        <p>Sellers may be required to provide valid identification and payment details for revenue settlement.</p>
+                        <p>We reserve the right to suspend or terminate accounts that provide false information or violate these Terms.</p>
+                        
+                        <h6>3. PAYMENT PROCESSING</h6>
+                        <p>SibloreEvents facilitates payments between Buyers and Sellers. We may integrate payment gateways including mobile money (such as M-Pesa), debit/credit cards, or other supported methods.</p>
+                        
+                        <p>We may delay or suspend payment processing for suspicious, fraudulent, or unlawful transactions.</p>
+                        
+                        <p>Sellers authorize SibloreEvents to deduct applicable service fees from each transaction.</p>
+                        
+                        <p>In cases of refunds, chargebacks, or reversals, Sellers authorize SibloreEvents to deduct the necessary amount from future settlements or their account balance.</p>
+                        
+                        <h6>4. EVENT CANCELLATION AND REFUND POLICY</h6>
+                        <p>If an event is canceled, the Seller is responsible for issuing refunds to Buyers except in verified cases of force majeure.</p>
+                        
+                        <p>SibloreEvents reserves the right to process refunds directly to Buyers where necessary.</p>
+                        
+                        <p>If ticket revenue has already been settled to a Seller prior to event cancellation, the Seller must ensure sufficient funds are available for refunds.</p>
+                        
+                        <p>Event postponement does not automatically qualify as cancellation. Refund eligibility for postponed events is subject to the Seller's policy.</p>
+                        
+                        <h6>5. SELLER RESPONSIBILITIES</h6>
+                        <p>Sellers agree to:</p>
+                        <ul>
+                            <li>Provide accurate event and merchandise information</li>
+                            <li>Honor ticket purchases</li>
+                            <li>Deliver purchased merchandise</li>
+                            <li>Comply with applicable laws and regulations</li>
+                            <li>Not engage in fraudulent or misleading practices</li>
+                        </ul>
+                        <p>SibloreEvents is not responsible for the organization, quality, or execution of events.</p>
+                        
+                        <h6>6. BUYER TERMS</h6>
+                        <p><strong>A. Ticket Responsibility</strong></p>
+                        <p>Buyers are responsible for keeping their tickets secure. SibloreEvents is not liable for lost, stolen, or misused tickets.</p>
+                        
+                        <p><strong>B. Merchandise</strong></p>
+                        <p>All merchandise disputes must be addressed directly with the Seller.</p>
+                        
+                        <p><strong>C. Limitation of Liability</strong></p>
+                        <p>SibloreEvents is not liable for:</p>
+                        <ul>
+                            <li>Event cancellations or delays</li>
+                            <li>Personal injury or accidents at events</li>
+                            <li>Loss of personal property</li>
+                            <li>Dissatisfaction with event quality</li>
+                        </ul>
+                        
+                        <h6>7. SERVICE FEES</h6>
+                        <p>SibloreEvents may charge service fees to Sellers and/or Buyers per transaction.</p>
+                        <p>Service fees are non-refundable once a transaction is successfully completed.</p>
+                        
+                        <h6>8. ACCOUNT SECURITY</h6>
+                        <p>You are responsible for maintaining the confidentiality of your account credentials.</p>
+                        
+                        <p>SibloreEvents is not liable for unauthorized access resulting from your failure to secure your account.</p>
+                        
+                        <p>You must notify us immediately of any suspected unauthorized use.</p>
+                        
+                        <h6>9. PROHIBITED USES</h6>
+                        <p>You may not use SibloreEvents:</p>
+                        <ul>
+                            <li>For unlawful purposes</li>
+                            <li>To violate intellectual property rights</li>
+                            <li>To distribute harmful or malicious content</li>
+                            <li>To harass or discriminate against others</li>
+                            <li>To engage in fraudulent or deceptive practices</li>
+                        </ul>
+                        <p>Violation may result in immediate account termination.</p>
+                        
+                        <h6>10. LIMITATION OF LIABILITY</h6>
+                        <p>SibloreEvents provides the platform "as is" and does not guarantee uninterrupted or error-free service.</p>
+                        
+                        <p>We are not liable for:</p>
+                        <ul>
+                            <li>System outages</li>
+                            <li>Payment gateway failures</li>
+                            <li>Third-party service disruptions</li>
+                            <li>Force majeure events including natural disasters, government restrictions, or civil unrest</li>
+                        </ul>
+                        
+                        <h6>11. TERMINATION</h6>
+                        <p>We reserve the right to suspend or terminate accounts at our discretion for violation of these Terms.</p>
+                        
+                        <p>Upon termination, users remain liable for outstanding obligations.</p>
+                        
+                        <h6>12. GOVERNING LAW</h6>
+                        <p>These Terms shall be governed by and construed in accordance with the laws of Kenya.</p>
+                        
+                        <h6>13. MODIFICATIONS</h6>
+                        <p>We reserve the right to modify these Terms at any time. Continued use of the platform constitutes acceptance of updated Terms.</p>
+                        
+                        <h6>14. CONTACT INFORMATION</h6>
+                        <p>For questions regarding these Terms of Service, please contact:</p>
+                        <p>Email: <a href="mailto:sibloreevents@proton.me">sibloreevents@proton.me</a></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-shield-alt me-2"></i>Privacy Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="privacy-content">
+                        <h4 class="text-center mb-4">Privacy Policy – SibloreEvents</h4>
+                        <p class="text-center text-muted mb-4">Last Updated: 4th March 2026</p>
+                        
+                        <h6>Overview</h6>
+                        <p>SibloreEvents respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share information when you use our platform, including our website and mobile applications.</p>
+                        
+                        <h6>Information We Collect</h6>
+                        <ul>
+                            <li><strong>Personal Information:</strong> Name, email, phone number, profile picture, payment details, account credentials.</li>
+                            <li><strong>Event and Purchase Data:</strong> Tickets purchased, merchandise orders, reviews, comments, and event attendance history.</li>
+                            <li><strong>Usage Data:</strong> IP address, browser type, device information, pages visited, and interaction with the platform.</li>
+                        </ul>
+                        
+                        <h6>How We Use Your Information</h6>
+                        <ul>
+                            <li>To provide, operate, and improve SibloreEvents services.</li>
+                            <li>To process payments and manage transactions.</li>
+                            <li>To communicate with users regarding orders, updates, and promotional offers (with consent).</li>
+                            <li>To comply with legal obligations.</li>
+                        </ul>
+                        
+                        <h6>Sharing Your Information</h6>
+                        <ul>
+                            <li>With sellers to fulfill ticket and merchandise orders.</li>
+                            <li>With payment processors (e.g., M-Pesa) to complete transactions.</li>
+                            <li>In compliance with legal obligations or to protect rights and safety.</li>
+                        </ul>
+                        
+                        <h6>Your Rights</h6>
+                        <ul>
+                            <li>Access, correct, or update your personal information.</li>
+                            <li>Request deletion of your account and personal data.</li>
+                            <li>Opt-out of promotional communications.</li>
+                        </ul>
+                        
+                        <h6>Data Security</h6>
+                        <p>We implement reasonable technical and organizational measures to protect your personal data. However, no system is completely secure; we cannot guarantee absolute security.</p>
+                        
+                        <h6>Children's Privacy</h6>
+                        <p>SibloreEvents does not knowingly collect personal information from individuals under 18. Use by minors is strictly prohibited.</p>
+                        
+                        <h6>Changes to this Privacy Policy</h6>
+                        <p>We may update this policy from time to time. Updates will be posted on this page with the "Last Updated" date.</p>
+                        
+                        <h6>Contact Us</h6>
+                        <p>For questions or concerns, email: <a href="mailto:sibloreevents@proton.me">sibloreevents@proton.me</a></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seller Agreement Modal -->
+    <div class="modal fade" id="sellerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-handshake me-2"></i>Seller Agreement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="seller-content">
+                        <h4 class="text-center mb-4">Seller Agreement – SibloreEvents</h4>
+                        <p class="text-center text-muted mb-4">Effective Date: 4th March 2026</p>
+                        
+                        <p>This Seller Agreement ("Agreement") is between SibloreEvents and the individual, company, or organization registering as a seller ("Seller").</p>
+                        
+                        <h6>1. Authorization</h6>
+                        <p>By registering, the Seller authorizes SibloreEvents to act as a facilitator for ticket and merchandise sales and payment processing.</p>
+                        
+                        <h6>2. Seller Obligations</h6>
+                        <ul>
+                            <li>Provide accurate event and merchandise information.</li>
+                            <li>Honor all ticket purchases and merchandise sales.</li>
+                            <li>Comply with applicable laws, regulations, and platform policies.</li>
+                            <li>Issue refunds for cancellations according to the Refund Policy.</li>
+                        </ul>
+                        
+                        <h6>3. Payment and Fees</h6>
+                        <ul>
+                            <li>SibloreEvents collects payments on behalf of the Seller.</li>
+                            <li>Service fees are deducted per transaction as outlined on the platform.</li>
+                            <li>Sellers must provide accurate bank or mobile payment details for settlements.</li>
+                        </ul>
+                        
+                        <h6>4. Event Cancellations and Refunds</h6>
+                        <ul>
+                            <li>Sellers must refund Buyers for canceled events except in cases of force majeure.</li>
+                            <li>Refunds for postponed events are subject to Seller discretion, unless stated otherwise.</li>
+                        </ul>
+                        
+                        <h6>5. Intellectual Property</h6>
+                        <ul>
+                            <li>Sellers retain ownership of event content and merchandise descriptions.</li>
+                            <li>Sellers grant SibloreEvents a license to display and promote their events and merchandise.</li>
+                        </ul>
+                        
+                        <h6>6. Termination</h6>
+                        <ul>
+                            <li>SibloreEvents may suspend or terminate Seller accounts for violations of this Agreement or applicable law.</li>
+                            <li>Sellers remain liable for all obligations and payments incurred prior to termination.</li>
+                        </ul>
+                        
+                        <h6>7. Governing Law</h6>
+                        <p>This Agreement is governed by the laws of Kenya.</p>
+                        
+                        <h6>Contact for Seller Support</h6>
+                        <p>Email: <a href="mailto:sibloreevents@proton.me">sibloreevents@proton.me</a></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Policy Modal -->
+    <div class="modal fade" id="refundModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-undo me-2"></i>Refund Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="refund-content">
+                        <h4 class="text-center mb-4">Refund Policy – SibloreEvents</h4>
+                        <p class="text-center text-muted mb-4">Last Updated: 4th March 2026</p>
+                        
+                        <h6>Scope</h6>
+                        <p>This Refund Policy applies to all tickets and merchandise purchased via SibloreEvents.</p>
+                        
+                        <h6>Tickets</h6>
+                        <ul>
+                            <li>Refunds are provided only in the event of cancellation by the Seller, except in cases of force majeure.</li>
+                            <li>Postponed events do not automatically qualify for a refund; refunds are at the Seller's discretion.</li>
+                            <li>Buyers must submit refund requests via their SibloreEvents account or email <a href="mailto:sibloreevents@proton.me">sibloreevents@proton.me</a>.</li>
+                        </ul>
+                        
+                        <h6>Merchandise</h6>
+                        <ul>
+                            <li>Merchandise refunds are allowed for defective or damaged items reported within 5 days of delivery.</li>
+                            <li>Sellers are responsible for processing refunds and issuing replacements where applicable.</li>
+                        </ul>
+                        
+                        <h6>Processing Refunds</h6>
+                        <ul>
+                            <li>Refunds will be processed via the original payment method within 7–10 business days.</li>
+                            <li>SibloreEvents may deduct transaction fees from refunded amounts.</li>
+                        </ul>
+                        
+                        <h6>Disputes</h6>
+                        <p>If a Buyer and Seller cannot agree, SibloreEvents may mediate disputes at its discretion.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Policy Modal -->
+    <div class="modal fade" id="cookieModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-cookie-bite me-2"></i>Cookie Policy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="cookie-content">
+                        <h4 class="text-center mb-4">Cookie Policy – SibloreEvents</h4>
+                        <p class="text-center text-muted mb-4">Last Updated: 4th March 2026</p>
+                        
+                        <h6>What Are Cookies?</h6>
+                        <p>Cookies are small text files stored on your device to help us improve your experience, analyze traffic, and customize content.</p>
+                        
+                        <h6>Types of Cookies We Use</h6>
+                        <ul>
+                            <li><strong>Essential Cookies:</strong> Required for login, checkout, and secure transactions.</li>
+                            <li><strong>Analytics Cookies:</strong> Collect anonymized data about site usage to improve our platform.</li>
+                            <li><strong>Marketing Cookies:</strong> Used to provide personalized advertising based on user interests.</li>
+                        </ul>
+                        
+                        <h6>Managing Cookies</h6>
+                        <p>You can control or disable cookies via your browser settings. However, some features may not function properly if cookies are disabled.</p>
+                        
+                        <h6>Changes to Cookie Policy</h6>
+                        <p>We may update this policy periodically. Changes will be reflected on this page with the updated date.</p>
+                        
+                        <h6>Contact</h6>
+                        <p>Questions regarding cookies can be directed to <a href="mailto:sibloreevents@proton.me">sibloreevents@proton.me</a></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Mobile Navigation Sidebar -->
+        <div class="mobile-sidebar" id="mobileSidebar">
+            <div class="mobile-sidebar-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        {% if user.is_authenticated and user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid var(--accent-green);">
+                        {% else %}
+                            <i class="fas fa-user-circle fa-2x me-3" style="color: var(--accent-green);"></i>
+                        {% endif %}
+                        <div>
+                            {% if user.is_authenticated %}
+                                <div class="fw-bold">{{ user.username }}</div>
+                                <div class="small text-muted">{{ user.get_user_type_display|title }}</div>
+                            {% else %}
+                                <div class="fw-bold">Welcome</div>
+                                <div class="small text-muted">Sign in to continue</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="btn-close" onclick="toggleMobileSidebar()" aria-label="Close sidebar"></button>
+                </div>
+            </div>
+            
+            <div class="mobile-sidebar-body">
+                <nav class="mobile-nav">
+                    <div class="nav-section">
+                        <div class="nav-section-title">Main Menu</div>
+                        <a href="{% url 'home' %}" class="mobile-nav-link">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                        <a href="{% url 'events:list' %}" class="mobile-nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Events</span>
+                        </a>
+                        <a href="{% url 'merchandise:list' %}" class="mobile-nav-link">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Merchandise</span>
+                        </a>
+                        <a href="{% url 'job_careers:list' %}" class="mobile-nav-link">
+                            <i class="fas fa-briefcase"></i>
+                            <span>Careers</span>
+                        </a>
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                    <div class="nav-section">
+                        <div class="nav-section-title">My Account</div>
+                        <a href="{% url 'accounts:profile' %}" class="mobile-nav-link">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Edit Profile</span>
+                        </a>
+                        <a href="{% url 'tickets:my_tickets' %}" class="mobile-nav-link">
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>My Tickets</span>
+                        </a>
+                        {% if user.is_seller %}
+                        <a href="{% url 'accounts:seller_dashboard' %}" class="mobile-nav-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Seller Dashboard</span>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:buyer_dashboard' %}" class="mobile-nav-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Buyer Dashboard</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-title">Support</div>
+                        <a href="#" onclick="openWhatsApp(); toggleMobileSidebar();" class="mobile-nav-link">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp Support</span>
+                        </a>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-title">Account Actions</div>
+                        <form method="post" action="{% url 'accounts:logout' %}" style="display: block;">
+                            {% csrf_token %}
+                            <button type="submit" class="mobile-nav-link logout-btn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="nav-section">
+                        <div class="nav-section-title">Get Started</div>
+                        <a href="{% url 'accounts:login' %}" class="mobile-nav-link">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'accounts:signup' %}" class="mobile-nav-link">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Sign Up</span>
+                        </a>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-title">Support</div>
+                        <a href="#" onclick="openWhatsApp(); toggleMobileSidebar();" class="mobile-nav-link">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp Support</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="toggleMobileSidebar()"></div>
+        
+        <!-- Floating Action Buttons -->
+        <div class="floating-buttons">
+            <a href="mailto:sibloreevents@proton.me" class="floating-btn email" title="Email Support">
+                <i class="fas fa-envelope"></i>
+                <span class="tooltip-text">Email Support</span>
+            </a>
+            <a href="#" onclick="openWhatsApp()" class="floating-btn whatsapp" title="WhatsApp Support">
+                <i class="fab fa-whatsapp"></i>
+                <span class="tooltip-text">WhatsApp Support</span>
+            </a>
+            <a href="#" onclick="openFAQ()" class="floating-btn faq" title="Help Center">
+                <i class="fas fa-question-circle"></i>
+                <span class="tooltip-text">Help Center</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/script.js' %}"></script>
+    
+    <script>
+        // WhatsApp and FAQ Functions
+        function openWhatsApp() {
+            const phoneNumber = '0111363870';
+            const message = encodeURIComponent('Hello! I need help with SibloreEvents.');
+            const whatsappUrl = `https://wa.me/254${phoneNumber.replace(/^0/, '')}?text=${message}`;
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        // Mobile Sidebar Toggle
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('mobileSidebarOverlay');
+            const toggleButton = document.querySelector('.mobile-menu-toggle');
+            
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(event.target) && 
+                !overlay.contains(event.target) && 
+                !toggleButton.contains(event.target)) {
+                toggleMobileSidebar();
+            }
+        });
+        
+        // Close sidebar on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const sidebar = document.getElementById('mobileSidebar');
+                if (sidebar.classList.contains('active')) {
+                    toggleMobileSidebar();
+                }
+            }
+        });
+        
+        function openFAQ() {
+            // Create FAQ modal if it doesn't exist
+            if (!document.getElementById('faqModal')) {
+                const faqModal = document.createElement('div');
+                faqModal.innerHTML = `
+                    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="faqModalLabel">
+                                        <i class="fas fa-question-circle me-2"></i>Help Center - Frequently Asked Questions
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="accordion" id="faqAccordion">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingOne">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                                    <i class="fas fa-ticket-alt me-2"></i>How do I purchase event tickets?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    To purchase event tickets, browse our <a href="{% url 'events:list' %}">events page</a>, select the event you're interested in, choose the number of tickets, and proceed to checkout. We accept secure payment methods.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingTwo">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                                    <i class="fas fa-user me-2"></i>How do I create an account?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    Click on the <a href="{% url 'accounts:signup' %}">Sign Up</a> button in the navigation menu. Fill in your details, choose whether you're a buyer or seller, and verify your email address to activate your account.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingThree">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                                    <i class="fas fa-tshirt me-2"></i>Can I sell merchandise on SibloreEvents?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    Yes! As a seller account holder, you can list and sell merchandise items. Simply create a seller account, go to your dashboard, and add your merchandise products with details and pricing.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingFour">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                                    <i class="fas fa-credit-card me-2"></i>What payment methods are accepted?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    We accept M-Pesa, Visa, Mastercard, and other major payment methods. All transactions are secure and encrypted for your safety.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingFive">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                                    <i class="fas fa-undo me-2"></i>What is your refund policy?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    Refunds are available up to 48 hours before the event start time. Please review our full refund policy in the Terms of Service or contact our support team for assistance.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingSix">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
+                                                    <i class="fas fa-headset me-2"></i>How can I contact customer support?
+                                                </button>
+                                            </h2>
+                                            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                                <div class="accordion-body">
+                                                    You can reach our customer support team via WhatsApp at <strong>0111363870</strong>, through the floating WhatsApp button, or by clicking the Contact Us link in the footer. We're available 24/7 to assist you.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" onclick="openWhatsApp()">
+                                        <i class="fab fa-whatsapp me-2"></i>Contact Support
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(faqModal);
+            }
+            
+            // Show the FAQ modal
+            const modal = new bootstrap.Modal(document.getElementById('faqModal'));
+            modal.show();
+        }
+    </script>
+    
+    <script>
+        // Auto-update year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Show Terms of Service
+        function showTermsOfService() {
+            const modal = new bootstrap.Modal(document.getElementById('termsModal'));
+            modal.show();
+        }
+        
+        function showPrivacyPolicy() {
+            const modal = new bootstrap.Modal(document.getElementById('privacyModal'));
+            modal.show();
+        }
+        
+        function showSellerAgreement() {
+            const modal = new bootstrap.Modal(document.getElementById('sellerModal'));
+            modal.show();
+        }
+        
+        function showRefundPolicy() {
+            const modal = new bootstrap.Modal(document.getElementById('refundModal'));
+            modal.show();
+        }
+        
+        function showCookiePolicy() {
+            const modal = new bootstrap.Modal(document.getElementById('cookieModal'));
+            modal.show();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    </div> <!-- End of mainContent -->
+</body>
+</html>

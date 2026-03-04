@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Event{% else %}Create Event{% endif %} - SibloreEvents
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header text-white" style="background-color: var(--accent-green);">
+                <h3 class="mb-0">
+                    {% if object %}Edit Event{% else %}Create New Event{% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.title|as_crispy_field }}
+                            {{ form.category|as_crispy_field }}
+                            {{ form.image|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mt-3 mb-3">Event Schedule</h5>
+                            {{ form.start_date|as_crispy_field }}
+                            {{ form.end_date|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mt-3 mb-3">Venue Information</h5>
+                            {{ form.venue|as_crispy_field }}
+                            {{ form.address|as_crispy_field }}
+                            {{ form.city|as_crispy_field }}
+                            {{ form.country|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mt-3 mb-3">Ticket Pricing</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    {{ form.price|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.vip_price|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4">
+                                    {{ form.early_bird_price|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mt-3 mb-3">Early Bird Pricing</h5>
+                            {{ form.early_bird_deadline|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mt-3 mb-3">Capacity</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.max_attendees|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.max_vip_attendees|as_crispy_field }}
+                                </div>
+                            </div>
+                            {% if form.status %}
+                                {{ form.status|as_crispy_field }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'events:list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Events
+                        </a>
+                        <button type="submit" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                            <i class="fas fa-save me-2"></i>
+                            {% if object %}Update Event{% else %}Create Event{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Flatpickr CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date/time pickers for event schedule
+    flatpickr("#id_start_date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 15,
+        locale: {
+            firstDayOfWeek: 1,
+            weekdays: {
+                shorthand: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                longhand: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            },
+            months: {
+                shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                longhand: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            }
+        }
+    });
+
+    flatpickr("#id_end_date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 15,
+        locale: {
+            firstDayOfWeek: 1,
+            weekdays: {
+                shorthand: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                longhand: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            },
+            months: {
+                shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                longhand: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            }
+        }
+    });
+
+    // Initialize date/time picker for early bird deadline
+    flatpickr("#id_early_bird_deadline", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        minuteIncrement: 15,
+        locale: {
+            firstDayOfWeek: 1,
+            weekdays: {
+                shorthand: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                longhand: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            },
+            months: {
+                shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                longhand: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            }
+        }
+    });
+
+    // Auto-hide early bird deadline if early bird price is not set
+    const earlyBirdPrice = document.querySelector('#id_early_bird_price');
+    const earlyBirdDeadline = document.querySelector('#id_early_bird_deadline');
+    
+    function toggleEarlyBirdDeadline() {
+        if (earlyBirdPrice && earlyBirdDeadline) {
+            const deadlineField = earlyBirdDeadline.closest('.form-group') || earlyBirdDeadline.closest('.mb-3');
+            if (earlyBirdPrice.value) {
+                deadlineField.style.display = 'block';
+            } else {
+                deadlineField.style.display = 'none';
+            }
+        }
+    }
+    
+    if (earlyBirdPrice) {
+        earlyBirdPrice.addEventListener('change', toggleEarlyBirdDeadline);
+        toggleEarlyBirdDeadline();
+    }
+
+    // Auto-hide VIP capacity if VIP price is not set
+    const vipPrice = document.querySelector('#id_vip_price');
+    const vipCapacity = document.querySelector('#id_max_vip_attendees');
+    
+    function toggleVipCapacity() {
+        if (vipPrice && vipCapacity) {
+            const capacityField = vipCapacity.closest('.form-group') || vipCapacity.closest('.mb-3');
+            if (vipPrice.value) {
+                capacityField.style.display = 'block';
+            } else {
+                capacityField.style.display = 'none';
+            }
+        }
+    }
+    
+    if (vipPrice) {
+        vipPrice.addEventListener('change', toggleVipCapacity);
+        toggleVipCapacity();
+    }
+
+    // Ensure end date is after start date
+    const startDate = document.querySelector('#id_start_date');
+    const endDate = document.querySelector('#id_end_date');
+    
+    if (startDate && endDate) {
+        startDate.addEventListener('change', function() {
+            endDate._flatpickr.set('minDate', this.value);
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Affiliate Links - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">My Affiliate Links</h2>
+        <p class="lead">Manage your affiliate marketing links</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Affiliate Links</h5>
+            </div>
+            <div class="card-body">
+                {% if object_list %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Unique Code</th>
+                                    <th>Clicks</th>
+                                    <th>Conversions</th>
+                                    <th>Commission Earned</th>
+                                    <th>Conversion Rate</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for link in object_list %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if link.product.featured_image %}
+                                                    <img src="{{ link.product.featured_image.url }}" alt="{{ link.product.title }}" class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                {% endif %}
+                                                <div>
+                                                    <strong>{{ link.product.title }}</strong><br>
+                                                    <small class="text-muted">KSh {{ link.product.current_price }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <code class="bg-light px-2 py-1 rounded">{{ link.unique_code }}</code>
+                                        </td>
+                                        <td>{{ link.clicks }}</td>
+                                        <td>{{ link.conversions }}</td>
+                                        <td class="text-success fw-bold">KSh {{ link.commission_earned }}</td>
+                                        <td>
+                                            <span class="badge {% if link.conversion_rate >= 5 %}bg-success{% elif link.conversion_rate >= 2 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ link.conversion_rate }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ link.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('{{ link.affiliate_url }}')">
+                                                    <i class="fas fa-copy"></i> Copy
+                                                </button>
+                                                <button class="btn btn-outline-info btn-sm" onclick="copyToClipboard('{{ link.unique_code }}')">
+                                                    <i class="fas fa-key"></i> Code
+                                                </button>
+                                                <a href="{{ link.product.get_absolute_url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                                    <i class="fas fa-external-link-alt"></i> View
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                        <nav aria-label="Affiliate links pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                <li class="page-item active">
+                                    <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                                </li>
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-link fa-3x text-muted mb-3"></i>
+                        <h5>No Affiliate Links Yet</h5>
+                        <p class="text-muted">Start promoting products to earn commissions!</p>
+                        <a href="{% url 'products:list' %}" class="btn text-white" style="background-color: var(--accent-green); border-color: var(--accent-green);">
+                            <i class="fas fa-store me-2"></i>Browse Products
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="toastMessage">Copied to clipboard!</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showToast('Copied to clipboard!');
+    });
+}
+
+function showToast(message) {
+    document.getElementById('toastMessage').textContent = message;
+    const toast = new bootstrap.Toast(document.getElementById('successToast'));
+    toast.show();
+}
+</script>
+{% endblock %}

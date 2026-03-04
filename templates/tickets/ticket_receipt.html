@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Ticket - {{ ticket.event.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 20px;
+            line-height: 1.4;
+        }
+        
+        .ticket {
+            max-width: 400px;
+            margin: 0 auto;
+            border: 1px solid #333;
+            padding: 20px;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .ticket-number {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 3px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .detail-label {
+            text-transform: capitalize;
+        }
+        
+        .detail-value {
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+        
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 10px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .qr-text {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .ticket-id {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .status {
+            text-align: center;
+            font-weight: bold;
+            padding: 5px;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .status-valid {
+            background: #f0f9f0;
+            color: #2d5a2d;
+        }
+        
+        .status-pending {
+            background: #fff9e6;
+            color: #856404;
+        }
+        
+        .footer {
+            text-align: center;
+            border-top: 2px dashed #333;
+            padding-top: 15px;
+            margin-top: 15px;
+            font-size: 10px;
+        }
+        
+        .footer-text {
+            margin-bottom: 3px;
+        }
+        
+        .total-section {
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+            padding: 10px 0;
+            margin: 15px 0;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .ticket {
+                max-width: 100%;
+                border: 1px solid #000;
+            }
+            
+            @page {
+                size: 80mm 200mm;
+                margin: 5mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-name">SIBLORE EVENTS</div>
+            <div class="receipt-title">EVENT TICKET</div>
+            <div class="ticket-number">Ticket #: {{ ticket.id|upper }}</div>
+            <div class="ticket-number">Date: {{ ticket.created_at|date:"d M Y H:i" }}</div>
+        </div>
+        
+        <!-- Event Details -->
+        <div class="section">
+            <div class="section-title">Event Details</div>
+            <div class="detail-row">
+                <span class="detail-label">Event:</span>
+                <span class="detail-value">{{ ticket.event.title }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ ticket.event.start_date|date:"d M Y, H:i" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Venue:</span>
+                <span class="detail-value">{{ ticket.event.venue }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Location:</span>
+                <span class="detail-value">{{ ticket.event.city }}</span>
+            </div>
+        </div>
+        
+        <!-- Ticket Details -->
+        <div class="section">
+            <div class="section-title">Ticket Details</div>
+            <div class="detail-row">
+                <span class="detail-label">Quantity:</span>
+                <span class="detail-value">{{ ticket.quantity }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Price/Ticket:</span>
+                <span class="detail-value">KSh {{ ticket.price_per_ticket }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Buyer:</span>
+                <span class="detail-value">{{ ticket.buyer.username }}</span>
+            </div>
+        </div>
+        
+        <!-- Total -->
+        <div class="total-section">
+            <div class="total-row">
+                <span>TOTAL AMOUNT:</span>
+                <span>KSh {{ ticket.total_amount }}</span>
+            </div>
+        </div>
+        
+        <!-- Status -->
+        <div class="status {% if ticket.is_valid %}status-valid{% else %}status-pending{% endif %}">
+            {% if ticket.is_valid %}VALID TICKET{% else %}PAYMENT PENDING{% endif %}
+        </div>
+        
+        <!-- QR Code -->
+        <div class="qr-section">
+            <div class="qr-code">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <div class="qr-text">SCAN FOR VERIFICATION</div>
+            <div class="ticket-id">{{ ticket.id|upper }}</div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-text">Thank you for choosing SibloreEvents</div>
+            <div class="footer-text">Kenya's Premier Event Platform</div>
+            <div class="footer-text">www.siblorevents.com</div>
+            <div class="footer-text">Support: 0111363870</div>
+        </div>
+    </div>
+</body>
+</html>

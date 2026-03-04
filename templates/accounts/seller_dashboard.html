@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Seller Dashboard - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Seller Dashboard</h2>
+        <p class="lead">Welcome back, {{ user.username }}!</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ total_events }}</h3>
+                <p class="card-text">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ total_merchandise }}</h3>
+                <p class="card-text">Merchandise Items</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">KSh {{ ticket_revenue|floatformat:0 }}</h3>
+                <p class="card-text">Total Revenue</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning">{{ recent_tickets|length }}</h3>
+                <p class="card-text">Recent Sales</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'events:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create New Event
+                    </a>
+                    <a href="{% url 'merchandise:create' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Add Merchandise
+                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Manage Your Content</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'events:my_events' %}" class="btn btn-outline-info">
+                        <i class="fas fa-calendar me-2"></i>Manage Events
+                    </a>
+                    <a href="#" class="btn btn-outline-success">
+                        <i class="fas fa-tshirt me-2"></i>Manage Merchandise
+                    </a>
+                    <a href="#" class="btn btn-outline-warning">
+                        <i class="fas fa-chart-line me-2"></i>View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Ticket Sales</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_tickets %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Buyer</th>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in recent_tickets %}
+                                    <tr>
+                                        <td>{{ ticket.event.title }}</td>
+                                        <td>{{ ticket.buyer.username }}</td>
+                                        <td>{{ ticket.quantity }}</td>
+                                        <td>KSh {{ ticket.total_amount }}</td>
+                                        <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No ticket sales yet. Start creating events to generate revenue!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
