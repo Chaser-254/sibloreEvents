@@ -79,6 +79,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:post_list' %}">
+                            <i class="fas fa-blog me-1"></i>Blog
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'resale_marketplace:marketplace' %}">
+                            <i class="fas fa-ticket-alt me-1"></i>Resale
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'merchandise:list' %}">
                             <i class="fas fa-shopping-bag me-1"></i>Merchandise
                         </a>
@@ -105,13 +115,34 @@
                                 <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
                                     <i class="fas fa-user-edit me-2"></i>Profile
                                 </a></li>
-                                {% if user.is_seller %}
-                                    <li><a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
-                                        <i class="fas fa-chart-line me-2"></i>Seller Dashboard
+                                {% if user.is_staff or user.is_superuser %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'resale_marketplace:verification_queue' %}">
+                                    <i class="fas fa-shield-alt me-2"></i>Verification Queue
+                                </a></li>
+                                {% endif %}
+                                {% if user.is_seller or user.is_product_seller %}
+                                    <li><a class="dropdown-item" href="{% url 'blog:my_posts' %}">
+                                        <i class="fas fa-blog me-2"></i>My Blog Posts
                                     </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'blog:post_create' %}">
+                                        <i class="fas fa-plus me-2"></i>Create Blog Post
+                                    </a></li>
+                                    {% if user.is_seller %}
+                                    <li><a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
+                                        <i class="fas fa-chart-line me-2"></i>Event Seller Dashboard
+                                    </a></li>
+                                    {% elif user.is_product_seller %}
+                                    <li><a class="dropdown-item" href="{% url 'accounts:product_seller_dashboard' %}">
+                                        <i class="fas fa-shopping-bag me-2"></i>Product Seller Dashboard
+                                    </a></li>
+                                    {% endif %}
                                 {% else %}
                                     <li><a class="dropdown-item" href="{% url 'accounts:buyer_dashboard' %}">
                                         <i class="fas fa-tachometer-alt me-2"></i>Buyer Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{% url 'resale_marketplace:marketplace' %}">
+                                        <i class="fas fa-ticket-alt me-2"></i>Resale Marketplace
                                     </a></li>
                                 {% endif %}
                                 <li><a class="dropdown-item" href="{% url 'tickets:my_tickets' %}">
@@ -182,25 +213,18 @@
                         <li class="mb-2"><a href="{% url 'events:list' %}">
                             <i class="fas fa-calendar-alt me-1"></i>Events
                         </a></li>
+                        <li class="mb-2"><a href="{% url 'resale_marketplace:marketplace' %}">
+                            <i class="fas fa-ticket-alt me-1"></i>Resale Marketplace
+                        </a></li>
                         <li class="mb-2"><a href="{% url 'products:list' %}">
                             <i class="fas fa-shopping-cart me-1"></i>Products
                         </a></li>
                         <li class="mb-2"><a href="{% url 'merchandise:list' %}">
                             <i class="fas fa-shopping-bag me-1"></i>Merchandise
                         </a></li>
-                        <li class="mb-2"><a href="{% url 'products:affiliate_dashboard' %}">
-                            <i class="fas fa-share-alt me-1"></i>Affiliate Marketing
+                        <li class="mb-2"><a href="{% url 'blog:post_list' %}">
+                            <i class="fas fa-blog me-1"></i>Blog
                         </a></li>
-                        <li class="mb-2"><a href="{% url 'job_careers:list' %}">
-                            <i class="fas fa-briefcase me-1"></i>Careers
-                        </a></li>
-                        <li class="mb-2"><a href="{% url 'accounts:login' %}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                        </a></li>
-                        <li class="mb-2"><a href="{% url 'accounts:signup' %}">
-                            <i class="fas fa-user-plus me-1"></i>Sign Up
-                        </a></li>
-                    </ul>
                 </div>
                 <div class="col-md-4">
                     <h5><i class="fas fa-headset me-2"></i>Support</h5>
@@ -677,12 +701,21 @@
                         {% if user.is_seller %}
                         <a href="{% url 'accounts:seller_dashboard' %}" class="mobile-nav-link">
                             <i class="fas fa-chart-line"></i>
-                            <span>Seller Dashboard</span>
+                            <span>Event Dashboard</span>
+                        </a>
+                        {% elif user.is_product_seller %}
+                        <a href="{% url 'accounts:product_seller_dashboard' %}" class="mobile-nav-link">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Product Dashboard</span>
                         </a>
                         {% else %}
                         <a href="{% url 'accounts:buyer_dashboard' %}" class="mobile-nav-link">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Buyer Dashboard</span>
+                        </a>
+                        <a href="{% url 'resale_marketplace:marketplace' %}" class="mobile-nav-link">
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>Resale Marketplace</span>
                         </a>
                         {% endif %}
                     </div>

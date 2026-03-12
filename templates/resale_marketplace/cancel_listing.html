@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Listing - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-times me-2"></i>Cancel Resale Listing
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Warning Message -->
+                    <div class="alert alert-warning mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Are you sure you want to cancel this listing?</strong>
+                        <p class="mb-0 mt-2">
+                            Once cancelled, this listing will no longer be available for purchase. 
+                            You can create a new listing at any time if you change your mind.
+                        </p>
+                    </div>
+
+                    <!-- Listing Details -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-brand-primary mb-3">{{ listing.ticket.event.name }}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Date:</strong> {{ listing.ticket.event.date|date:"F j, Y" }}</p>
+                                    <p class="mb-2"><strong>Time:</strong> {{ listing.ticket.event.time|date:"g:i A" }}</p>
+                                    <p class="mb-2"><strong>Venue:</strong> {{ listing.ticket.event.venue }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Quantity:</strong> {{ listing.ticket.quantity }} ticket{{ listing.ticket.quantity|pluralize }}</p>
+                                    <p class="mb-2"><strong>Price:</strong> KES {{ listing.ticket.price_per_ticket }}</p>
+                                    <p class="mb-2"><strong>Transfer:</strong> {{ listing.get_contact_preference_display }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if listing.description %}
+                            <div class="mt-3">
+                                <h6 class="text-muted">Additional Information</h6>
+                                <p class="small">{{ listing.description|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Price Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Original Price:</span>
+                                <span class="text-decoration-line-through">KES {{ form.original_price }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Resale Price:</span>
+                                <span class="text-brand-primary fw-bold">KES {{ form.resale_price }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times me-2"></i>Yes, Cancel Listing
+                            </button>
+                            <a href="{% url 'resale_marketplace:listing_detail' listing.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Go Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}

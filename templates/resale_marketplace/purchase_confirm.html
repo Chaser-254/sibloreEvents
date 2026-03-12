@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Purchase Confirmation - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Confirm Purchase
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Listing Summary -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-brand-primary mb-3">{{ listing.ticket.event.name }}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Date:</strong> {{ listing.ticket.event.date|date:"F j, Y" }}</p>
+                                    <p class="mb-2"><strong>Time:</strong> {{ listing.ticket.event.time|date:"g:i A" }}</p>
+                                    <p class="mb-2"><strong>Venue:</strong> {{ listing.ticket.event.venue }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Quantity:</strong> {{ listing.ticket.quantity }} ticket{{ listing.ticket.quantity|pluralize }}</p>
+                                    <p class="mb-2"><strong>Price:</strong> KES {{ listing.ticket.price_per_ticket }}</p>
+                                    <p class="mb-2"><strong>Transfer:</strong> {{ listing.get_contact_preference_display }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if listing.description %}
+                            <div class="mt-3">
+                                <h6 class="text-muted">Additional Information</h6>
+                                <p class="small">{{ listing.description|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Original Price:</span>
+                                <span class="text-decoration-line-through">KES {{ listing.original_price }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Resale Price:</span>
+                                <span class="text-brand-primary fw-bold">KES {{ listing.resale_price }}</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">You Save:</span>
+                                <span class="text-success fw-bold">KES {{ listing.original_price|add:"-"|add:listing.resale_price }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Details -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-brand-primary mb-3">Transaction Details</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Transaction ID:</strong> <span class="text-muted">{{ transaction.transaction_id }}</span></p>
+                                    <p class="mb-2"><strong>Platform Fee:</strong> <span class="text-muted">KES {{ transaction.platform_fee }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Total Amount:</strong> <span class="text-brand-primary fw-bold">KES {{ transaction.amount }}</span></p>
+                                    <p class="mb-2"><strong>Payment Method:</strong> <span class="text-muted">Will be selected on next step</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seller Information -->
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Seller Information
+                        </h6>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                            <div>
+                                <strong>{{ listing.seller.username }}</strong>
+                                <br>
+                                <small class="text-muted">Member since {{ listing.seller.date_joined|date:"M Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <form method="post" action="{% url 'resale_marketplace:purchase_ticket' listing.pk %}">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Confirm Purchase
+                            </button>
+                            <a href="{% url 'resale_marketplace:listing_detail' listing.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Listing
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.alert-heading {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}

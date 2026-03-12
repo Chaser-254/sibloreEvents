@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ listing.ticket.event.name }} - Resale Listing{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Listing Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>{{ listing.ticket.event.name }}
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i>Verified
+                        </span>
+                        {% if listing.is_expired %}
+                        <span class="badge bg-danger">
+                            <i class="fas fa-clock me-1"></i>Expired
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Event Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Event Information</h6>
+                            <p class="mb-2"><strong>Date:</strong> {{ listing.ticket.event.date|date:"F j, Y" }}</p>
+                            <p class="mb-2"><strong>Time:</strong> {{ listing.ticket.event.time|date:"g:i A" }}</p>
+                            <p class="mb-2"><strong>Venue:</strong> {{ listing.ticket.event.venue }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Ticket Details</h6>
+                            <p class="mb-2"><strong>Quantity:</strong> {{ listing.ticket.quantity }} ticket{{ listing.ticket.quantity|pluralize }}</p>
+                            <p class="mb-2"><strong>Price:</strong> KES {{ listing.ticket.price_per_ticket }}</p>
+                            <p class="mb-2"><strong>Transfer:</strong> {{ listing.get_contact_preference_display }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    {% if listing.description %}
+                    <div class="mb-4">
+                        <h6 class="text-muted">Additional Information</h6>
+                        <p>{{ listing.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Price Section -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div>
+                                            <span class="text-decoration-line-through text-muted small">KES {{ listing.original_price }}</span>
+                                            <h4 class="text-brand-primary mb-0">KES {{ listing.resale_price }}</h4>
+                                        </div>
+                                    </div>
+                                    {% with percentage=listing.get_price_percentage %}
+                                    <div class="mt-2">
+                                        <span class="badge {% if percentage > 100 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ percentage|floatformat:0 }}% of original price
+                                        </span>
+                                    </div>
+                                    {% endwith %}
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <div class="text-muted small mb-2">
+                                        <i class="fas fa-calendar me-1"></i>Listed {{ listing.listed_at|timesince }} ago
+                                    </div>
+                                    <div class="text-muted small mb-2">
+                                        <i class="fas fa-hourglass-half me-1"></i>Expires {{ listing.expires_at|timeuntil }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seller Information -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h6 class="text-muted mb-1">Seller Information</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-muted"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ listing.seller.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">Member since {{ listing.seller.date_joined|date:"M Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if user.is_authenticated %}
+                        {% if can_purchase %}
+                        <form method="post" action="{% url 'resale_marketplace:purchase_ticket' listing.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-shopping-cart me-2"></i>Purchase Ticket
+                            </button>
+                        </form>
+                        {% elif user == listing.seller %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This is your listing. You can manage it from your dashboard.
+                        </div>
+                        {% elif listing.is_expired %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            This listing has expired and is no longer available for purchase.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            This ticket cannot be purchased at this time.
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}">Login</a> to purchase this ticket.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Trust & Safety -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Trust & Safety
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                                <div>
+                                    <strong>Verified Ticket</strong>
+                                    <p class="small text-muted mb-0">This ticket has been verified by our team</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-lock text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Secure Transfer</strong>
+                                    <p class="small text-muted mb-0">Safe platform-based ticket transfer</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-percentage text-warning me-3 mt-1"></i>
+                                <div>
+                                    <strong>Price Protection</strong>
+                                    <p class="small text-muted mb-0">Maximum 20% above original price</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-headset text-info me-3 mt-1"></i>
+                                <div>
+                                    <strong>24/7 Support</strong>
+                                    <p class="small text-muted mb-0">Dedicated customer support</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Price Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Price Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Original Price:</span>
+                        <strong>KES {{ listing.original_price }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Resale Price:</span>
+                        <strong class="text-brand-primary">KES {{ listing.resale_price }}</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>You Save:</span>
+                        <strong class="text-success">KES {{ listing.original_price|add:"-"|add:listing.resale_price }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            {% if user.is_authenticated and can_purchase %}
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <form method="post" action="{% url 'resale_marketplace:purchase_ticket' listing.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.badge.bg-success {
+    background: var(--accent-green) !important;
+}
+
+.badge.bg-warning {
+    background: #f39c12 !important;
+    color: white !important;
+}
+
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}

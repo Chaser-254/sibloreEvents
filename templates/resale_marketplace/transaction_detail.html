@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Detail - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-receipt me-2"></i>Transaction Detail
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Transaction Status -->
+                    <div class="alert {% if transaction.status == 'completed' %}alert-success{% elif transaction.status == 'pending' %}alert-warning{% else %}alert-danger{% endif %}">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-{% if transaction.status == 'completed' %}check-circle{% elif transaction.status == 'pending' %}clock{% else %}times-circle{% endif %} me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Transaction {{ transaction.get_status_display|title }}</h6>
+                                <p class="mb-0">
+                                    {% if transaction.status == 'completed' %}
+                                        Your purchase has been completed successfully!
+                                    {% elif transaction.status == 'pending' %}
+                                        Your payment is being processed.
+                                    {% else %}
+                                        There was an issue with your transaction.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event and Ticket Info -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-brand-primary mb-3">{{ transaction.listing.ticket.event.name }}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Date:</strong> {{ transaction.listing.ticket.event.date|date:"F j, Y" }}</p>
+                                    <p class="mb-2"><strong>Time:</strong> {{ transaction.listing.ticket.event.time|date:"g:i A" }}</p>
+                                    <p class="mb-2"><strong>Venue:</strong> {{ transaction.listing.ticket.event.venue }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Quantity:</strong> {{ transaction.listing.ticket.quantity }} ticket{{ transaction.listing.ticket.quantity|pluralize }}</p>
+                                    <p class="mb-2"><strong>Price:</strong> KES {{ transaction.listing.ticket.price_per_ticket }}</p>
+                                    <p class="mb-2"><strong>Transfer Method:</strong> {{ transaction.listing.get_contact_preference_display }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <p class="text-muted mb-1">Original Price</p>
+                                <h5 class="text-decoration-line-through">KES {{ transaction.listing.original_price }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <p class="text-muted mb-1">Resale Price</p>
+                                <h5 class="text-brand-primary">KES {{ transaction.listing.resale_price }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <p class="text-muted mb-1">You Saved</p>
+                                <h5 class="text-success">KES {{ transaction.listing.original_price|add:"-"|add:transaction.listing.resale_price }}</h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Details -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-brand-primary mb-3">Transaction Information</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Transaction ID:</strong> <span class="text-muted">{{ transaction.transaction_id }}</span></p>
+                                    <p class="mb-2"><strong>Created:</strong> <span class="text-muted">{{ transaction.created_at|date:"F j, Y, g:i A" }}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Platform Fee:</strong> <span class="text-muted">KES {{ transaction.platform_fee }}</span></p>
+                                    <p class="mb-2"><strong>Net Amount:</strong> <span class="text-muted">KES {{ transaction.net_amount }}</span></p>
+                                </div>
+                            </div>
+                            
+                            {% if transaction.completed_at %}
+                            <div class="mt-3">
+                                <p class="mb-2"><strong>Completed:</strong> <span class="text-success">{{ transaction.completed_at|date:"F j, Y, g:i A" }}</span></p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Parties Information -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user me-2"></i>Seller
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ transaction.seller.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">Member since {{ transaction.seller.date_joined|date:"M Y" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user-check me-2"></i>Buyer
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ transaction.buyer.username }}</strong>
+                                            <br>
+                                            <small class="text-muted">Member since {{ transaction.buyer.date_joined|date:"M Y" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if transaction.status == 'pending' %}
+                    <div class="text-center">
+                        <form method="post" action="{% url 'resale_marketplace:complete_purchase' transaction.transaction_id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Complete Payment
+                            </button>
+                        </form>
+                        <p class="text-muted mt-2">
+                            <small>In a real implementation, this would integrate with a payment gateway like M-Pesa, PayPal, or Stripe.</small>
+                        </p>
+                    </div>
+                    {% elif transaction.status == 'completed' %}
+                    <div class="text-center">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Purchase Completed!</strong><br>
+                            <span class="small">Your ticket has been transferred to your account.</span>
+                        </div>
+                        <a href="{% url 'resale_marketplace:my_purchases' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>View My Purchases
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Transaction Issue</strong><br>
+                            <span class="small">Please contact support for assistance.</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}

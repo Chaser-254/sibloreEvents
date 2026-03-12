@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Resale Marketplace{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 text-brand-primary">
+                        <i class="fas fa-search me-2"></i>Search Results
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {% if query %}
+                        Found {{ total_count }} result{{ total_count|pluralize }} for "{{ query }}"
+                        {% else %}
+                        Browse all resale listings
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'resale_marketplace:marketplace' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Marketplace
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Summary -->
+    {% if query or event_filter or price_min or price_max %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h6 class="text-brand-primary mb-3">Active Filters</h6>
+            <div class="row">
+                {% if query %}
+                <div class="col-md-3 col-6 mb-2">
+                    <strong>Search:</strong> "{{ query }}"
+                </div>
+                {% endif %}
+                {% if event_filter %}
+                <div class="col-md-3 col-6 mb-2">
+                    <strong>Event:</strong> "{{ event_filter }}"
+                </div>
+                {% endif %}
+                {% if price_min %}
+                <div class="col-md-3 col-6 mb-2">
+                    <strong>Min Price:</strong> KES {{ price_min }}
+                </div>
+                {% endif %}
+                {% if price_max %}
+                <div class="col-md-3 col-6 mb-2">
+                    <strong>Max Price:</strong> KES {{ price_max }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Results -->
+    <div class="row">
+        <div class="col-12">
+            {% if listings %}
+            <div class="row">
+                {% for listing in listings %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 listing-card">
+                        <!-- Verification Badge -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Verified
+                            </span>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <!-- Event Info -->
+                            <h6 class="card-title text-brand-primary">
+                                {{ listing.ticket.event.name }}
+                            </h6>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-calendar me-1"></i>{{ listing.ticket.event.date|date:"M d, Y" }}
+                                <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ listing.ticket.event.venue }}
+                            </p>
+                            
+                            <!-- Ticket Details -->
+                            <div class="mb-3">
+                                <span class="badge bg-light text-dark me-2">{{ listing.ticket.quantity }} ticket{{ listing.ticket.quantity|pluralize }}</span>
+                                <span class="text-muted small">Price: KES {{ listing.ticket.price_per_ticket }}</span>
+                            </div>
+                            
+                            <!-- Description -->
+                            {% if listing.description %}
+                            <p class="card-text small text-muted flex-grow-1">{{ listing.description|truncatewords:15 }}</p>
+                            {% endif %}
+                            
+                            <!-- Price Info -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-decoration-line-through text-muted small">
+                                            KES {{ listing.original_price }}
+                                        </span>
+                                        <h5 class="text-brand-primary mb-0">KES {{ listing.resale_price }}</h5>
+                                    </div>
+                                    <div class="text-end">
+                                        {% with percentage=listing.get_price_percentage %}
+                                        <span class="badge {% if percentage > 100 %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ percentage|floatformat:0 }}%
+                                        </span>
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Seller Info -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ listing.seller.username }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>{{ listing.listed_at|timesince }} ago
+                                </small>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="mt-auto">
+                                <a href="{% url 'resale_marketplace:listing_detail' listing.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="fas fa-eye me-2"></i>View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Listings pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&q={{ query }}&event={{ event_filter }}&price_min={{ price_min }}&price_max={{ price_max }}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&event={{ event_filter }}&price_min={{ price_min }}&price_max={{ price_max }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&q={{ query }}&event={{ event_filter }}&price_min={{ price_min }}&price_max={{ price_max }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&event={{ event_filter }}&price_min={{ price_min }}&price_max={{ price_max }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}&event={{ event_filter }}&price_min={{ price_min }}&price_max={{ price_max }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No listings found</h4>
+                <p class="text-muted mb-4">
+                    {% if query %}
+                    No listings match your search criteria. Try different keywords or filters.
+                    {% else %}
+                    No resale listings are currently available.
+                    {% endif %}
+                </p>
+                <a href="{% url 'resale_marketplace:marketplace' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Marketplace
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.listing-card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
+    position: relative;
+}
+
+.listing-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.badge.bg-success {
+    background: var(--accent-green) !important;
+}
+
+.badge.bg-warning {
+    background: #f39c12 !important;
+    color: white !important;
+}
+
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.end-0 {
+    right: 0;
+}
+</style>
+{% endblock %}

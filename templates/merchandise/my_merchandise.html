@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}My Merchandise - SibloreEvents{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h3 text-brand-primary">
+                <i class="fas fa-tshirt me-2"></i>My Merchandise
+            </h2>
+            <p class="text-muted mb-0">Manage your merchandise items and inventory</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-box fa-2x text-primary mb-2"></i>
+                    <h4 class="mb-1">{{ total_items }}</h4>
+                    <p class="text-muted mb-0">Total Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h4 class="mb-1">{{ active_items }}</h4>
+                    <p class="text-muted mb-0">Active Items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-info mb-2"></i>
+                    <h4 class="mb-1">KES {{ total_value|floatformat:0 }}</h4>
+                    <p class="text-muted mb-0">Total Value</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus fa-2x text-warning mb-2"></i>
+                    <h4 class="mb-1">Add</h4>
+                    <p class="text-muted mb-0">New Item</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{% url 'merchandise:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Merchandise
+                    </a>
+                    <a href="{% url 'merchandise:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-eye me-2"></i>View Public Store
+                    </a>
+                </div>
+                <div>
+                    <form method="get" class="d-flex">
+                        <input type="search" name="search" class="form-control me-2" placeholder="Search merchandise..." value="{{ request.GET.search }}">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merchandise List -->
+    <div class="row">
+        <div class="col-12">
+            {% if merchandise_items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in merchandise_items %}
+                        <tr>
+                            <td>
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-tshirt text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ item.name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ item.description|truncatewords:10 }}</small>
+                            </td>
+                            <td>
+                                {% if item.category %}
+                                    {{ item.category.name }}
+                                {% else %}
+                                    <span class="text-muted">No category</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong class="text-brand-primary">KES {{ item.price }}</strong>
+                            </td>
+                            <td>
+                                {% if item.stock_quantity > 0 %}
+                                <span class="badge bg-success">{{ item.stock_quantity }}</span>
+                                {% else %}
+                                <span class="badge bg-danger">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status == 'active' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Active
+                                </span>
+                                {% elif item.status == 'inactive' %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-pause me-1"></i>Inactive
+                                </span>
+                                {% elif item.status == 'out_of_stock' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Out of Stock
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'merchandise:detail' item.pk %}" class="btn btn-sm btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'merchandise:update' item.pk %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'merchandise:delete' item.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Merchandise pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-tshirt fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No merchandise items yet</h4>
+                <p class="text-muted mb-4">Start by adding your first merchandise item to your store!</p>
+                <a href="{% url 'merchandise:create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add Your First Merchandise
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card.bg-light {
+    background: rgba(52, 152, 219, 0.05) !important;
+}
+
+.badge.bg-success {
+    background: var(--accent-green) !important;
+}
+
+.btn-group .btn {
+    border-radius: 0.375rem;
+    margin: 0 0.125rem;
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(52, 152, 219, 0.05);
+}
+</style>
+{% endblock %}

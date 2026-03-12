@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'tickets',
     'job_careers',
     'products',
+    'blog',
+    'resale_marketplace',
 ]
 
 MIDDLEWARE = [

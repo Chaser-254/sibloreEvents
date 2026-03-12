@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Post - SibloreBlog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Blog Post
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong> This action cannot be undone. Once you delete this post, it will be permanently removed from the blog.
+                    </div>
+                    
+                    <h6 class="mb-3">Post Details:</h6>
+                    <div class="mb-4">
+                        <h5 class="text-brand-primary mb-2">{{ post.title }}</h5>
+                        <p class="text-muted mb-2">{{ post.excerpt|truncatewords:20 }}</p>
+                        <div class="small text-muted">
+                            <span class="me-3">
+                                <i class="fas fa-folder me-1"></i>{{ post.category.name }}
+                            </span>
+                            <span class="me-3">
+                                <i class="far fa-calendar me-1"></i>{{ post.created_at|date:"M d, Y" }}
+                            </span>
+                            {% if post.status == 'published' %}
+                            <span>
+                                <i class="far fa-eye me-1"></i>{{ post.views }} views
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Delete Post
+                            </button>
+                            <a href="{{ post.get_absolute_url }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.alert-warning {
+    background: rgba(243, 156, 18, 0.05);
+    color: #f39c12;
+    border-left-color: #f39c12;
+}
+
+.card-header.bg-danger {
+    background: #e74c3c !important;
+}
+
+.btn-danger {
+    background: #e74c3c !important;
+    border-color: #e74c3c !important;
+}
+
+.btn-danger:hover {
+    background: #c0392b !important;
+    border-color: #c0392b !important;
+}
+</style>
+{% endblock %}

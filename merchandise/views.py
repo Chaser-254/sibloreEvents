@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.db.models import Q
+from django.db.models import Q, Sum
 from .models import MerchandiseItem, MerchandiseCategory
 
 class MerchandiseListView(ListView):
@@ -108,3 +108,31 @@ class MerchandiseDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Merchandise deleted successfully!')
         return super().delete(request, *args, **kwargs)
+
+
+class MyMerchandiseView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = MerchandiseItem
+    template_name = 'merchandise/my_merchandise.html'
+    context_object_name = 'merchandise_items'
+    paginate_by = 12
+    
+    def test_func(self):
+        return self.request.user.is_seller
+    
+    def handle_no_permission(self):
+        messages.error(self.request, 'You need a seller account to manage merchandise.')
+        return redirect('accounts:login')
+    
+    def get_queryset(self):
+        return MerchandiseItem.objects.filter(
+            seller=self.request.user
+        ).order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_items'] = self.get_queryset().count()
+        context['active_items'] = self.get_queryset().filter(status='active').count()
+        context['total_value'] = self.get_queryset().filter(status='active').aggregate(
+            total=models.Sum('price')
+        )['total'] or 0
+        return context

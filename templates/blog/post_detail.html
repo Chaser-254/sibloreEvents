@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - SibloreBlog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'blog:post_list' %}" class="text-decoration-none">Blog</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ post.category.get_absolute_url }}" class="text-decoration-none">{{ post.category.name }}</a>
+            </li>
+            <li class="breadcrumb-item active">{{ post.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Post Header -->
+    <article class="mb-5">
+        <header class="mb-4">
+            <div class="text-center mb-4">
+                <h1 class="display-5 fw-bold text-brand-primary mb-3">{{ post.title }}</h1>
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                    <span class="badge bg-brand-accent fs-6">{{ post.category.name }}</span>
+                    {% for tag in post.tags.all %}
+                    <a href="{{ tag.get_absolute_url }}" class="badge bg-light text-dark text-decoration-none">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Featured Image -->
+            {% if post.featured_image %}
+            <div class="text-center mb-4">
+                <img src="{{ post.featured_image.url }}" class="img-fluid rounded shadow" alt="{{ post.title }}">
+            </div>
+            {% endif %}
+            
+            <!-- Post Meta -->
+            <div class="row align-items-center mb-4">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-user-circle fa-2x text-muted"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ post.author.get_full_name|default:post.author.username }}</div>
+                            <small class="text-muted">
+                                <i class="far fa-calendar me-1"></i>{{ post.published_at|date:"F d, Y" }}
+                                <span class="ms-2">
+                                    <i class="far fa-clock me-1"></i>{{ post.published_at|time:"g:i A" }}
+                                </span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex align-items-center justify-content-md-end gap-3">
+                        <span class="text-muted">
+                            <i class="far fa-eye me-1"></i>{{ post.views }} views
+                        </span>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="far fa-heart me-1"></i>Save
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <div class="post-content">
+            <div class="content-wrapper">
+                {{ post.content|safe }}
+            </div>
+        </div>
+
+        <!-- Post Footer -->
+        <footer class="mt-5 pt-4 border-top">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-brand-primary mb-3">Share this post</h6>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h6 class="text-brand-primary mb-3">Category</h6>
+                    <a href="{{ post.category.get_absolute_url }}" class="btn btn-outline-primary">
+                        <i class="fas fa-folder me-2"></i>{{ post.category.name }}
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </article>
+
+    <!-- Related Posts -->
+    {% if related_posts %}
+    <section class="mb-5">
+        <h3 class="h4 mb-4 text-brand-primary">
+            <i class="fas fa-newspaper me-2"></i>Related Posts
+        </h3>
+        <div class="row">
+            {% for related_post in related_posts %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    {% if related_post.featured_image %}
+                    <img src="{{ related_post.featured_image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;" alt="{{ related_post.title }}">
+                    {% else %}
+                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 150px;">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a href="{{ related_post.get_absolute_url }}" class="text-decoration-none text-brand-primary">
+                                {{ related_post.title }}
+                            </a>
+                        </h6>
+                        <small class="text-muted">
+                            <i class="far fa-calendar me-1"></i>{{ related_post.published_at|date:"M d, Y" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Comments Section -->
+    <section class="comments-section">
+        <h3 class="h4 mb-4 text-brand-primary">
+            <i class="fas fa-comments me-2"></i>Comments ({{ post.comments.count }})
+        </h3>
+        
+        {% if user.is_authenticated and not user.is_seller %}
+        <!-- Comment Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Leave a Comment</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'blog:add_comment' post.slug %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="4" placeholder="Share your thoughts..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Post Comment
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% elif user.is_authenticated and user.is_seller %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            As an event organizer, you can create blog posts but cannot comment on posts. Buyers can comment on your posts to engage with your content.
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <a href="{% url 'accounts:login' %}?next={{ request.path }}">Log in as a buyer</a> to leave a comment.
+        </div>
+        {% endif %}
+
+        <!-- Comments List -->
+        <div class="comments-list">
+            {% for comment in post.comments.all %}
+            {% if comment.approved %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                            <div>
+                                <div class="fw-bold">{{ comment.author.get_full_name|default:comment.author.username }}</div>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i>{{ comment.created_at|date:"M d, Y g:i A" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mb-0">{{ comment.content|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-comments fa-2x mb-3"></i>
+                <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+.post-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.content-wrapper {
+    background: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-light);
+}
+
+.content-wrapper h1,
+.content-wrapper h2,
+.content-wrapper h3,
+.content-wrapper h4,
+.content-wrapper h5,
+.content-wrapper h6 {
+    color: var(--royal-blue);
+    margin: 2rem 0 1rem 0;
+}
+
+.content-wrapper p {
+    margin-bottom: 1.5rem;
+}
+
+.content-wrapper img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+}
+
+.content-wrapper blockquote {
+    border-left: 4px solid var(--accent-green);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.content-wrapper ul,
+.content-wrapper ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.content-wrapper li {
+    margin-bottom: 0.5rem;
+}
+
+.badge.bg-brand-accent {
+    background: var(--accent-green) !important;
+}
+
+.comments-section {
+    margin-top: 3rem;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: var(--text-secondary);
+}
+
+.breadcrumb-item a {
+    color: var(--accent-green);
+}
+</style>
+{% endblock %}

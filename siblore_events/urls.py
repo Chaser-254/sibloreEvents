@@ -29,6 +29,8 @@ urlpatterns = [
     path('merchandise/', include('merchandise.urls')),
     path('tickets/', include('tickets.urls')),
     path('careers/', include('job_careers.urls')),
+    path('blog/', include('blog.urls')),
+    path('resale/', include('resale_marketplace.urls')),
 ]
 
 if settings.DEBUG:
