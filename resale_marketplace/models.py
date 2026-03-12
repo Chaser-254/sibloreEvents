@@ -57,18 +57,15 @@ class ResaleListing(models.Model):
     def __str__(self):
         return f"ResaleListing #{self.id}"
     
-    # Temporarily disable all custom methods to isolate the issue
-    """
     def save(self, *args, **kwargs):
         if not self.expires_at:
             self.expires_at = timezone.now() + timezone.timedelta(days=7)
         
         # Validate price limits (max 20% above original price)
-        # Temporarily disabled to debug admin issues
-        # if self.original_price and self.resale_price:
-        #     max_allowed = self.original_price * Decimal('1.20')  # 20% maximum
-        #     if self.resale_price > max_allowed:
-        #         self.resale_price = max_allowed
+        if self.original_price and self.resale_price:
+            max_allowed = self.original_price * Decimal('1.20')  # 20% maximum
+            if self.resale_price > max_allowed:
+                self.resale_price = max_allowed
         
         super().save(*args, **kwargs)
     
@@ -95,7 +92,6 @@ class ResaleListing(models.Model):
         self.ticket.buyer = buyer
         self.ticket.save()
         self.save()
-    """
 
 
 class ResaleTransaction(models.Model):
@@ -136,10 +132,9 @@ class ResaleTransaction(models.Model):
             self.transaction_id = f"RS-{uuid.uuid4().hex[:12].upper()}"
         
         # Calculate platform fee (5% of resale price)
-        # Temporarily disabled to debug admin issues
-        # if not self.platform_fee and self.amount:
-        #     self.platform_fee = self.amount * Decimal('0.05')
-        #     self.net_amount = self.amount - self.platform_fee
+        if not self.platform_fee and self.amount:
+            self.platform_fee = self.amount * Decimal('0.05')
+            self.net_amount = self.amount - self.platform_fee
         
         super().save(*args, **kwargs)
     
