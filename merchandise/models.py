@@ -25,6 +25,7 @@ class MerchandiseItem(models.Model):
     description = models.TextField()
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='merchandise')
     category = models.ForeignKey(MerchandiseCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    event = models.ForeignKey('events.Event', on_delete=models.CASCADE, null=True, blank=True, related_name='merchandise_items')
     
     # Pricing
     price = models.DecimalField(max_digits=10, decimal_places=2)

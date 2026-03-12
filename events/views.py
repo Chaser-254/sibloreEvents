@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.db.models import Q
 from .models import Event, Category
+from merchandise.models import MerchandiseItem
 
 class MyEventsView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Event
@@ -81,6 +82,12 @@ class EventDetailView(DetailView):
             category=event.category,
             status='published'
         ).exclude(pk=event.pk)[:4]
+        
+        # Get related merchandise items for this event
+        context['event_merchandise'] = MerchandiseItem.objects.filter(
+            event=event,
+            status='active'
+        ).select_related('category')
         
         return context
 

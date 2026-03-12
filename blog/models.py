@@ -46,6 +46,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(blank=True, null=True)
+    tags = models.ManyToManyField('Tag', related_name='posts', blank=True)
     
     class Meta:
         ordering = ['-published_at', '-created_at']
@@ -85,7 +86,6 @@ class Comment(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=60, unique=True, blank=True)
-    posts = models.ManyToManyField(Post, related_name='tags', blank=True)
     
     class Meta:
         ordering = ['name']
