@@ -38,7 +38,9 @@
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100 event-card">
                 {% if event.image %}
-                    <img src="{{ event.image.url }}" class="card-img-top event-image" alt="{{ event.title }}" style="height: 200px; object-fit: cover;">
+                    <div class="event-image-container">
+                        <img src="{{ event.image.url }}" class="event-image" alt="{{ event.title }}">
+                    </div>
                 {% else %}
                     <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
                         <i class="fas fa-calendar-alt fa-3x text-muted"></i>
@@ -132,18 +134,38 @@
 {% endblock %}
 
 <style>
-/* Mobile-responsive event images */
+/* Event image container and responsive styling */
+.event-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
 .event-image {
     width: 100%;
-    height: 200px !important;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.event-image:hover {
+    transform: scale(1.05);
+}
+
+/* Ensure card-img-top alternative has same behavior */
+.card-img-top {
     object-fit: cover;
     object-position: center;
 }
 
 /* Mobile specific adjustments */
 @media (max-width: 768px) {
-    .event-image {
-        height: 180px !important;
+    .event-image-container {
+        height: 180px;
     }
     
     .event-card {
@@ -171,8 +193,8 @@
 }
 
 @media (max-width: 576px) {
-    .event-image {
-        height: 150px !important;
+    .event-image-container {
+        height: 150px;
     }
     
     .card-title {
@@ -191,6 +213,26 @@
     .btn {
         font-size: 0.9rem;
         padding: 0.5rem 1rem;
+    }
+}
+
+/* Additional fallback for any remaining images */
+img.card-img-top {
+    width: 100% !important;
+    height: 200px !important;
+    object-fit: cover !important;
+    object-position: center !important;
+}
+
+@media (max-width: 768px) {
+    img.card-img-top {
+        height: 180px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    img.card-img-top {
+        height: 150px !important;
     }
 }
 </style>

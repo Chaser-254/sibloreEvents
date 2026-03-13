@@ -26,7 +26,9 @@
                 </div>
                 
                 {% if event.image %}
-                    <img src="{{ event.image.url }}" class="img-fluid rounded mb-4" alt="{{ event.title }}">
+                    <div class="event-detail-image-container mb-4">
+                        <img src="{{ event.image.url }}" class="event-detail-image" alt="{{ event.title }}">
+                    </div>
                 {% endif %}
                 
                 <div class="row mb-4">
@@ -188,3 +190,59 @@
     </div>
 </div>
 {% endblock %}
+
+<style>
+/* Event detail image styling */
+.event-detail-image-container {
+    position: relative;
+    width: 100%;
+    max-height: 400px;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.event-detail-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* Mobile responsive for event detail */
+@media (max-width: 768px) {
+    .event-detail-image-container {
+        max-height: 300px;
+    }
+    
+    .event-detail-image {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 576px) {
+    .event-detail-image-container {
+        max-height: 250px;
+    }
+    
+    .event-detail-image {
+        max-height: 250px;
+    }
+}
+
+/* Fix related events images */
+.related-events img.rounded {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: cover !important;
+    object-position: center !important;
+}
+
+.related-events .rounded.bg-light {
+    width: 60px !important;
+    height: 60px !important;
+    flex-shrink: 0;
+}
+</style>
