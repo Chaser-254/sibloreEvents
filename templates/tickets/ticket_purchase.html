@@ -42,12 +42,18 @@
                     </div>
                     <div class="col-md-6">
                         <h5>Pricing Information</h5>
-                        <p><strong>Current Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span></p>
+                        <p><strong>Regular Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span></p>
+                        {% if event.vip_price %}
+                            <p><strong>VIP Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.vip_price }}</span></p>
+                        {% endif %}
                         {% if event.early_bird_price and event.early_bird_deadline %}
                             <p><strong>Early Bird:</strong> KSh {{ event.early_bird_price }}</p>
                             <p><strong>Early Bird Ends:</strong> {{ event.early_bird_deadline|date:"F d, Y H:i" }}</p>
                         {% endif %}
-                        <p><strong>Available:</strong> {{ event.available_tickets }} / {{ event.max_attendees }}</p>
+                        <p><strong>Regular Available:</strong> {{ event.available_tickets }} / {{ event.max_attendees }}</p>
+                        {% if event.vip_price %}
+                            <p><strong>VIP Available:</strong> {{ event.available_vip_tickets }} {% if event.max_vip_attendees > 0 %}/ {{ event.max_vip_attendees }}{% endif %}</p>
+                        {% endif %}
                     </div>
                 </div>
                 
@@ -62,6 +68,24 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6">
+                                {% if event.vip_price %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Ticket Type</label>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="ticket_type" id="regular" value="regular" checked>
+                                            <label class="btn btn-outline-primary" for="regular">
+                                                Regular<br><small>KSh {{ event.current_price }}</small>
+                                            </label>
+                                            
+                                            {% if event.max_vip_attendees == 0 or event.current_vip_attendees < event.max_vip_attendees %}
+                                                <input type="radio" class="btn-check" name="ticket_type" id="vip" value="vip">
+                                                <label class="btn btn-outline-warning" for="vip">
+                                                    VIP<br><small>KSh {{ event.vip_price }}</small>
+                                                </label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
                                 {{ form.quantity|as_crispy_field }}
                             </div>
                             <div class="col-md-6">
@@ -69,8 +93,12 @@
                                     <div class="card-body">
                                         <h6>Order Summary</h6>
                                         <div class="d-flex justify-content-between">
+                                            <span>Ticket Type:</span>
+                                            <strong id="ticket-type-display">Regular</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
                                             <span>Price per ticket:</span>
-                                            <strong>KSh {{ event.current_price }}</strong>
+                                            <strong id="price-display">KSh {{ event.current_price }}</strong>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Quantity:</span>
@@ -152,17 +180,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.querySelector('input[name="quantity"]');
     const quantityDisplay = document.getElementById('quantity-display');
     const totalDisplay = document.getElementById('total-display');
-    const pricePerTicket = parseFloat("{{ event.current_price|floatformat:2 }}");
+    const priceDisplay = document.getElementById('price-display');
+    const ticketTypeDisplay = document.getElementById('ticket-type-display');
     
-    if (quantityInput) {
-        quantityInput.addEventListener('input', function() {
-            const quantity = parseInt(this.value) || 1;
-            const total = pricePerTicket * quantity;
-            
-            quantityDisplay.textContent = quantity;
-            totalDisplay.textContent = 'KSh ' + total.toFixed(2);
-        });
+    const regularPrice = parseFloat("{{ event.current_price|floatformat:2 }}");
+    let vipPrice = null;
+    {% if event.vip_price %}
+    vipPrice = parseFloat("{{ event.vip_price|floatformat:2 }}");
+    {% endif %}
+    
+    function updateOrderSummary() {
+        const quantity = parseInt(quantityInput.value) || 1;
+        const ticketType = document.querySelector('input[name="ticket_type"]:checked')?.value || 'regular';
+        
+        let price, ticketTypeName;
+        if (ticketType === 'vip' && vipPrice) {
+            price = vipPrice;
+            ticketTypeName = 'VIP';
+        } else {
+            price = regularPrice;
+            ticketTypeName = 'Regular';
+        }
+        
+        const total = price * quantity;
+        
+        ticketTypeDisplay.textContent = ticketTypeName;
+        priceDisplay.textContent = 'KSh ' + price.toFixed(2);
+        quantityDisplay.textContent = quantity;
+        totalDisplay.textContent = 'KSh ' + total.toFixed(2);
     }
+    
+    // Update when quantity changes
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updateOrderSummary);
+    }
+    
+    // Update when ticket type changes
+    document.querySelectorAll('input[name="ticket_type"]').forEach(radio => {
+        radio.addEventListener('change', updateOrderSummary);
+    });
+    
+    // Initialize
+    updateOrderSummary();
 });
 </script>
 {% endblock %}

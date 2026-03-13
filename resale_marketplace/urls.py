@@ -18,6 +18,10 @@ urlpatterns = [
     path('transaction/<str:transaction_id>/', views.transaction_detail, name='transaction_detail'),
     path('cancel/<int:pk>/', views.CancelListingView.as_view(), name='cancel_listing'),
     
+    # Download views (require login)
+    path('download/receipt/<str:transaction_id>/', views.download_receipt, name='download_receipt'),
+    path('download/ticket/<str:transaction_id>/', views.download_ticket, name='download_ticket'),
+    
     # Admin/staff verification views
     path('verification/queue/', views.VerificationQueueView.as_view(), name='verification_queue'),
     path('verification/verify/<int:pk>/', views.verify_ticket, name='verify_ticket'),

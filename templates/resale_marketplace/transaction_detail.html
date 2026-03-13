@@ -162,7 +162,35 @@
                             <strong>Purchase Completed!</strong><br>
                             <span class="small">Your ticket has been transferred to your account.</span>
                         </div>
-                        <a href="{% url 'resale_marketplace:my_purchases' %}" class="btn btn-outline-primary">
+                        
+                        <!-- Download Options -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-download me-2"></i>Download Options
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <a href="{% url 'resale_marketplace:download_receipt' transaction.transaction_id %}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-file-invoice me-2"></i>Download Receipt
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <a href="{% url 'resale_marketplace:download_ticket' transaction.transaction_id %}" class="btn btn-primary w-100">
+                                            <i class="fas fa-ticket-alt me-2"></i>Download Ticket
+                                        </a>
+                                    </div>
+                                </div>
+                                <p class="text-muted small mt-2 mb-0">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Download your receipt for records and ticket for event entry
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'resale_marketplace:my_purchases' %}" class="btn btn-outline-secondary">
                             <i class="fas fa-list me-2"></i>View My Purchases
                         </a>
                     </div>

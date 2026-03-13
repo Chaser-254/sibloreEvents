@@ -99,12 +99,9 @@
                     <!-- Action Buttons -->
                     {% if user.is_authenticated %}
                         {% if can_purchase %}
-                        <form method="post" action="{% url 'resale_marketplace:purchase_ticket' listing.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                <i class="fas fa-shopping-cart me-2"></i>Purchase Ticket
-                            </button>
-                        </form>
+                        <a href="{% url 'resale_marketplace:purchase_ticket' listing.pk %}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Purchase Ticket
+                        </a>
                         {% elif user == listing.seller %}
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
@@ -208,12 +205,9 @@
             {% if user.is_authenticated and can_purchase %}
             <div class="card mb-4">
                 <div class="card-body text-center">
-                    <form method="post" action="{% url 'resale_marketplace:purchase_ticket' listing.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary btn-lg w-100">
-                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
-                        </button>
-                    </form>
+                    <a href="{% url 'resale_marketplace:purchase_ticket' listing.pk %}" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-shopping-cart me-2"></i>Buy Now
+                    </a>
                 </div>
             </div>
             {% endif %}

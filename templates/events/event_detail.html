@@ -26,9 +26,7 @@
                 </div>
                 
                 {% if event.image %}
-                    <div class="event-detail-image-container mb-4">
-                        <img src="{{ event.image.url }}" class="event-detail-image" alt="{{ event.title }}">
-                    </div>
+                    <img src="{{ event.image.url }}" class="img-fluid rounded mb-4 event-detail-image" alt="{{ event.title }}">
                 {% endif %}
                 
                 <div class="row mb-4">
@@ -45,11 +43,17 @@
                     </div>
                     <div class="col-md-6">
                         <h5>Ticket Information</h5>
-                        <p><strong>Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span></p>
+                        <p><strong>Regular Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.current_price }}</span></p>
+                        {% if event.vip_price %}
+                            <p><strong>VIP Price:</strong> <span class="fw-bold" style="color: var(--accent-green);">KSh {{ event.vip_price }}</span></p>
+                        {% endif %}
                         {% if event.early_bird_price and event.early_bird_deadline %}
                             <p><strong>Early Bird:</strong> KSh {{ event.early_bird_price }} (until {{ event.early_bird_deadline|date:"M d, Y" }})</p>
                         {% endif %}
                         <p><strong>Available Tickets:</strong> {{ event.available_tickets }} / {{ event.max_attendees }}</p>
+                        {% if event.vip_price %}
+                            <p><strong>Available VIP Tickets:</strong> {{ event.available_vip_tickets }} {% if event.max_vip_attendees > 0 %}/ {{ event.max_vip_attendees }}{% endif %}</p>
+                        {% endif %}
                         <p><strong>Organizer:</strong> {{ event.organizer.username }}</p>
                     </div>
                 </div>
@@ -189,60 +193,45 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
 
 <style>
-/* Event detail image styling */
-.event-detail-image-container {
-    position: relative;
-    width: 100%;
-    max-height: 400px;
-    overflow: hidden;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-}
-
 .event-detail-image {
-    width: 100%;
+    max-width: 100%;
     height: auto;
-    max-height: 400px;
     object-fit: cover;
     object-position: center;
-    display: block;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Mobile responsive for event detail */
+/* Mobile-specific adjustments for event detail */
 @media (max-width: 768px) {
-    .event-detail-image-container {
-        max-height: 300px;
+    .event-detail-image {
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
     }
     
-    .event-detail-image {
-        max-height: 300px;
+    /* Adjust spacing on mobile */
+    .row.mb-4 {
+        margin-bottom: 1.5rem !important;
     }
 }
 
 @media (max-width: 576px) {
-    .event-detail-image-container {
-        max-height: 250px;
+    .event-detail-image {
+        margin-bottom: 1rem;
     }
     
-    .event-detail-image {
-        max-height: 250px;
+    /* Ensure proper text spacing on small screens */
+    h1.card-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Adjust badge spacing */
+    .mb-3 .badge {
+        margin-bottom: 0.25rem;
+        margin-right: 0.25rem;
     }
 }
-
-/* Fix related events images */
-.related-events img.rounded {
-    width: 60px !important;
-    height: 60px !important;
-    object-fit: cover !important;
-    object-position: center !important;
-}
-
-.related-events .rounded.bg-light {
-    width: 60px !important;
-    height: 60px !important;
-    flex-shrink: 0;
-}
 </style>
+{% endblock %}

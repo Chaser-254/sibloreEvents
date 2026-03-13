@@ -5,42 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SibloreEvents{% endblock %}</title>
     
-    <!-- Google Fonts - Inter for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome - Professional Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
     {% load static %}
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <link rel="shortcut icon" href="{% static 'images/logo.png' %}">
     <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
     
-    {% block extra_css %}{% endblock %}
+    {% block extra_css %}
+<style>
+/* Additional fixes for buyer navbar display */
+.navbar-nav .nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    align-items: center;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: var(--accent-green) !important;
+    background: var(--bg-light);
+    padding-left: 2rem !important;
+    outline: none;
+}
+
+/* Hide profile icon nav for buyers (show only for sellers) */
+.navbar-nav .nav-link[href*="profile"] {
+    display: none;
+}
+
+/* Show profile icon nav only for sellers */
+.user.is-seller .navbar-nav .nav-link[href*="profile"],
+.user.is-product-seller .navbar-nav .nav-link[href*="profile"] {
+    display: block !important;
+}
+
+/* Loading animation styles */
+.loading-logo {
+    animation: pulse 2s infinite;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Progress bar enhancements */
+.progress-bar-container {
+    backdrop-filter: blur(5px);
+    background: rgba(0,0,0,0.1);
+}
+
+.rotating-ring {
+    border: 3px solid var(--accent-green);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
 </head>
 <body>
-    <!-- Progress Bar -->
     <div class="progress-bar-container" id="progressBar">
         <div class="progress-content">
-            <div class="loading-text">SibloreEvents</div>
-            <div class="loading-subtitle">Loading...</div>
-            
-            <!-- Rotating Progress Ring -->
+            <div class="d-flex align-items-center justify-content-center">
+                <img src="{% static 'images/logo.png' %}" alt="SibloreEvents Logo" class="loading-logo me-2" height="30" width="30">
+            </div>
             <div class="rotating-ring"></div>
         </div>
     </div>
     
-    <!-- Main Content (initially hidden) -->
     <div id="mainContent" style="opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0.5s ease;">
     
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" aria-label="Toggle mobile menu">
@@ -51,20 +111,6 @@
                 <img src="{% static 'images/logo.png' %}" alt="SibloreEvents Logo" class="logo-img me-2" height="40" width="40">
                 <span class="brand-text">SibloreEvents</span>
             </a>
-            
-            {% if user.is_authenticated %}
-                <div class="profile-icon-nav">
-                    {% if user.profile_picture %}
-                        <a href="{% url 'accounts:profile' %}" class="profile-link">
-                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover; border: 2px solid var(--accent-green);">
-                        </a>
-                    {% else %}
-                        <a href="{% url 'accounts:profile' %}" class="profile-link">
-                            <i class="fas fa-user-circle" style="color: var(--accent-green);"></i>
-                        </a>
-                    {% endif %}
-                </div>
-            {% endif %}
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
@@ -121,22 +167,14 @@
                                     <i class="fas fa-shield-alt me-2"></i>Verification Queue
                                 </a></li>
                                 {% endif %}
-                                {% if user.is_seller or user.is_product_seller %}
-                                    <li><a class="dropdown-item" href="{% url 'blog:my_posts' %}">
-                                        <i class="fas fa-blog me-2"></i>My Blog Posts
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% url 'blog:post_create' %}">
-                                        <i class="fas fa-plus me-2"></i>Create Blog Post
-                                    </a></li>
-                                    {% if user.is_seller %}
+                                {% if user.is_seller %}
                                     <li><a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
                                         <i class="fas fa-chart-line me-2"></i>Event Seller Dashboard
                                     </a></li>
-                                    {% elif user.is_product_seller %}
+                                {% elif user.is_product_seller %}
                                     <li><a class="dropdown-item" href="{% url 'accounts:product_seller_dashboard' %}">
                                         <i class="fas fa-shopping-bag me-2"></i>Product Seller Dashboard
                                     </a></li>
-                                    {% endif %}
                                 {% else %}
                                     <li><a class="dropdown-item" href="{% url 'accounts:buyer_dashboard' %}">
                                         <i class="fas fa-tachometer-alt me-2"></i>Buyer Dashboard
@@ -176,7 +214,6 @@
         </div>
     </nav>
 
-    <!-- Messages -->
     {% if messages %}
         <div class="container mt-3">
             {% for message in messages %}
@@ -189,12 +226,10 @@
         </div>
     {% endif %}
 
-    <!-- Main Content -->
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="row">
@@ -268,7 +303,6 @@
         </div>
     </footer>
 
-    <!-- Terms of Service Modal -->
     <div class="modal fade" id="termsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -417,7 +451,6 @@
         </div>
     </div>
 
-    <!-- Privacy Policy Modal -->
     <div class="modal fade" id="privacyModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -484,7 +517,6 @@
         </div>
     </div>
 
-    <!-- Seller Agreement Modal -->
     <div class="modal fade" id="sellerModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -551,7 +583,6 @@
         </div>
     </div>
 
-    <!-- Refund Policy Modal -->
     <div class="modal fade" id="refundModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -599,7 +630,6 @@
         </div>
     </div>
 
-    <!-- Cookie Policy Modal -->
     <div class="modal fade" id="cookieModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -641,7 +671,6 @@
         </div>
     </div>
 
-        <!-- Mobile Navigation Sidebar -->
         <div class="mobile-sidebar" id="mobileSidebar">
             <div class="mobile-sidebar-header">
                 <div class="d-flex align-items-center justify-content-between">
@@ -763,10 +792,8 @@
             </div>
         </div>
         
-        <!-- Mobile Sidebar Overlay -->
         <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="toggleMobileSidebar()"></div>
         
-        <!-- Floating Action Buttons -->
         <div class="floating-buttons">
             <a href="mailto:sibloreevents@proton.me" class="floating-btn email" title="Email Support">
                 <i class="fas fa-envelope"></i>
@@ -783,9 +810,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
     <script src="{% static 'js/script.js' %}"></script>
     
     <script>
@@ -978,6 +1003,5 @@
     </script>
     
     {% block extra_js %}{% endblock %}
-    </div> <!-- End of mainContent -->
-</body>
+    </div> </body>
 </html>

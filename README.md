@@ -83,6 +83,25 @@ A comprehensive Django-based platform for selling event tickets, merchandise, an
 - **Date/Time:** Flatpickr JavaScript library
 - **Icons:** Font Awesome 6.4
 
+## Brand Guidelines & Documentation
+
+### Brand Documentation
+- **[BRANDING.md](BRANDING.md)** - Comprehensive brand guidelines, color palette, typography, and visual identity
+- **[BRANDING_ASSETS.md](BRANDING_ASSETS.md)** - Implementation guide with code examples and component library
+
+### Brand Overview
+- **Brand Name:** SibloreEvents
+- **Primary Colors:** Royal Blue (#2c3e50) and Accent Green (#27ae60)
+- **Typography:** Inter font family
+- **Design Philosophy:** Minimalist, modern, and professional
+- **Target Audience:** Event organizers, attendees, merchandise sellers, and affiliate marketers
+
+### Quick Brand Reference
+- **Logo:** Located in `/static/images/logo.png`
+- **CSS Variables:** Defined in `/static/css/style.css`
+- **Component Library:** Available in `BRANDING_ASSETS.md`
+- **Color System:** Royal Blue (primary), Accent Green (secondary), neutral grays
+
 ## Installation
 
 1. **Clone the repository**
